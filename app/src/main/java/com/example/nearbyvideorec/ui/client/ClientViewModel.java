@@ -1,16 +1,16 @@
-package com.example.nearbyvideorec.ui.home;
+package com.example.nearbyvideorec.ui.client;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class HomeViewModel extends ViewModel {
+public class ClientViewModel extends ViewModel {
 
     private MutableLiveData<String> mText;
 
-    public HomeViewModel() {
+    public ClientViewModel() {
         mText = new MutableLiveData<>();
-        mText.setValue("This is home fragment");
+        mText.setValue("This is client fragment");
     }
 
     public LiveData<String> getText() {
