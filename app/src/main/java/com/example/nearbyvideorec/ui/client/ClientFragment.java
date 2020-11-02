@@ -1,4 +1,4 @@
-package com.example.nearbyvideorec.ui.notifications;
+package com.example.nearbyvideorec.ui.client;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,17 +14,17 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.nearbyvideorec.R;
 
-public class NotificationsFragment extends Fragment {
+public class ClientFragment extends Fragment {
 
-    private NotificationsViewModel notificationsViewModel;
+    private ClientViewModel clientViewModel;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        notificationsViewModel =
-                new ViewModelProvider(this).get(NotificationsViewModel.class);
-        View root = inflater.inflate(R.layout.fragment_notifications, container, false);
-        final TextView textView = root.findViewById(R.id.text_notifications);
-        notificationsViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
+        clientViewModel =
+                new ViewModelProvider(this).get(ClientViewModel.class);
+        View root = inflater.inflate(R.layout.fragment_client, container, false);
+        final TextView textView = root.findViewById(R.id.text_home);
+        clientViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 textView.setText(s);

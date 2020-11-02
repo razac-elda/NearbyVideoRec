@@ -1,16 +1,16 @@
-package com.example.nearbyvideorec.ui.notifications;
+package com.example.nearbyvideorec.ui.server;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class NotificationsViewModel extends ViewModel {
+public class ServerViewModel extends ViewModel {
 
     private MutableLiveData<String> mText;
 
-    public NotificationsViewModel() {
+    public ServerViewModel() {
         mText = new MutableLiveData<>();
-        mText.setValue("This is notifications fragment");
+        mText.setValue("This is server fragment");
     }
 
     public LiveData<String> getText() {
