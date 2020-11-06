@@ -3,4 +3,6 @@
     <string name="title_client">Client</string>
     <string name="title_server">Server</string>
     <string name="title_video">Video</string>
+    <string name="activate_as_a_client">Activate as a client</string>
+    <string name="client_not_connected">Not connected</string>
 </resources>

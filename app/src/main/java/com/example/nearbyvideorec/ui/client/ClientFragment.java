@@ -23,6 +23,7 @@ public class ClientFragment extends Fragment {
         clientViewModel =
                 new ViewModelProvider(this).get(ClientViewModel.class);
         View root = inflater.inflate(R.layout.fragment_client, container, false);
+        /*
         final TextView textView = root.findViewById(R.id.text_home);
         clientViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
@@ -30,6 +31,8 @@ public class ClientFragment extends Fragment {
                 textView.setText(s);
             }
         });
+        */
+
         return root;
     }
 }
