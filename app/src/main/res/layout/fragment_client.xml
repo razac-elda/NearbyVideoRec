@@ -8,7 +8,7 @@
 
 
     <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/client_switch"
+        android:id="@+id/activation_switch"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
@@ -24,7 +24,9 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.0"
+        android:textOff="@string/client_activation_offline"
+        android:textOn="@string/client_activation_online"/>
 
     <TextView
         android:id="@+id/client_status"
@@ -41,5 +43,6 @@
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/client_switch" />
+        app:layout_constraintTop_toBottomOf="@+id/activation_switch" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

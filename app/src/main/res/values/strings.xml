@@ -5,4 +5,6 @@
     <string name="title_video">Video</string>
     <string name="activate_as_a_client">Activate as a client</string>
     <string name="client_not_connected">Not connected</string>
+    <string name="client_activation_offline">Client offline</string>
+    <string name="client_activation_online">Client online</string>
 </resources>
