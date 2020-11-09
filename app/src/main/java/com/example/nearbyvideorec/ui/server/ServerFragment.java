@@ -22,6 +22,8 @@ public class ServerFragment extends Fragment {
 
     private ServerViewModel serverViewModel;
 
+    private Button send_button;
+
     // Switch test
     private final View.OnClickListener switch_onClickListener = new View.OnClickListener() {
         @SuppressLint("ShowToast")
@@ -31,8 +33,10 @@ public class ServerFragment extends Fragment {
             boolean on = ((SwitchMaterial) v).isChecked();
             if (on) {
                 toast = Toast.makeText(requireContext(), "ON", Toast.LENGTH_SHORT);
+                send_button.setEnabled(true);
             } else {
                 toast = Toast.makeText(requireContext(), "OFF", Toast.LENGTH_SHORT);
+                send_button.setEnabled(false);
             }
             toast.show();
         }
@@ -59,8 +63,9 @@ public class ServerFragment extends Fragment {
         activation_switch.setOnClickListener(switch_onClickListener);
 
         // Button click listener
-        Button send_button = root.findViewById(R.id.server_send_button);
+        send_button = (Button) root.findViewById(R.id.server_send_button);
         send_button.setOnClickListener(button_onClickListener);
+        send_button.setEnabled(false);
 
         return root;
     }
