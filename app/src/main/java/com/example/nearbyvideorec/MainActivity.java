@@ -1,7 +1,6 @@
 package com.example.nearbyvideorec;
 
 import android.os.Bundle;
-import android.view.View;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -13,13 +12,20 @@ import androidx.navigation.ui.NavigationUI;
 
 public class MainActivity extends AppCompatActivity {
 
+    /*
+    * Singleton class used to save UI elements status when switching fragments.
+    * Each fragment uses this singleton to obtain own UI element status, only if needed.
+    * Any element status that needs to be monitored during execution must be managed.
+    */
+    private SavedUIData savedUIData;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        // Singleton created for the first and only time.
+        savedUIData = SavedUIData.getInstance();
         BottomNavigationView navView = findViewById(R.id.nav_view);
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.navigation_client, R.id.navigation_server, R.id.navigation_video)
                 .build();
