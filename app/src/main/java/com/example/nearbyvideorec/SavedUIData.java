@@ -1,23 +1,17 @@
 package com.example.nearbyvideorec;
 
-public class SavedUIData {
-
-    private static SavedUIData instance = null;
+// Singleton-enum pattern is the suggested implementation of a Singleton nowadays.
+public enum SavedUIData {
+    INSTANCE;
 
     // Declare elements that need to be monitored.
     private Boolean client_status_switch;
     private Boolean server_status_switch;
 
     // Initial status for each element when fragment is created for the first time.
-    public SavedUIData() {
+    SavedUIData() {
         client_status_switch = false;
         server_status_switch = false;
-    }
-
-    public static SavedUIData getInstance() {
-        if (instance == null)
-            instance = new SavedUIData();
-        return instance;
     }
 
     // Getter and Setters for all the elements.

@@ -58,7 +58,7 @@ public class ServerFragment extends Fragment {
         serverViewModel =
                 new ViewModelProvider(this).get(ServerViewModel.class);
         View root = inflater.inflate(R.layout.fragment_server, container, false);
-        savedUIData = SavedUIData.getInstance();
+        savedUIData = SavedUIData.INSTANCE;
 
         // Switch click listener.
         status_switch = (SwitchMaterial) root.findViewById(R.id.server_activation_switch);
