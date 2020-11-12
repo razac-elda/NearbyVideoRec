@@ -45,7 +45,7 @@ public class ClientFragment extends Fragment {
         clientViewModel =
                 new ViewModelProvider(this).get(ClientViewModel.class);
         View root = inflater.inflate(R.layout.fragment_client, container, false);
-        savedUIData = SavedUIData.getInstance();
+        savedUIData = SavedUIData.INSTANCE;
 
         // Switch click listener.
         status_switch = (SwitchMaterial) root.findViewById(R.id.client_status_switch);

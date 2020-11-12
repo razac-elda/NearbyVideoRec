@@ -22,7 +22,7 @@ public class VideoFragment extends Fragment {
         videoViewModel =
                 new ViewModelProvider(this).get(VideoViewModel.class);
         View root = inflater.inflate(R.layout.fragment_video, container, false);
-        savedUIData = SavedUIData.getInstance();
+        savedUIData = SavedUIData.INSTANCE;
 
         return root;
     }
