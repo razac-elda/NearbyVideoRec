@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.nearbyvideorec.MainActivity;
 import com.example.nearbyvideorec.R;
 import com.example.nearbyvideorec.SavedUIData;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -35,8 +36,10 @@ public class ServerFragment extends Fragment {
             savedUIData.setServer_status_switch(status);
             send_button.setEnabled(status);
             if (status) {
+                ((MainActivity)requireActivity()).requestAdvertise();
                 toast.setText("ON");
             } else {
+                ((MainActivity)requireActivity()).requestDisconnect();
                 toast.setText("OFF");
             }
             toast.show();

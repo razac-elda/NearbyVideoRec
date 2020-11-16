@@ -4,7 +4,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 
+import com.example.nearbyvideorec.ui.client.ClientFragment;
 import com.google.android.gms.nearby.Nearby;
 import com.google.android.gms.nearby.connection.AdvertisingOptions;
 import com.google.android.gms.nearby.connection.ConnectionInfo;
@@ -57,6 +59,35 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(navView, navController);
         context = getApplicationContext();
         SERVICE_ID = getPackageName();
+    }
+
+    public void requestDiscovery() {
+        if (!savedUIData.getServer_status_switch()) {
+            //startDiscovery();
+        } else {
+            Log.d("Client/Server", "Cannot switch to discovery if you are the server!");
+            savedUIData.setClient_status_switch(false);
+            // TODO:Find a way to update the UI without switching fragment
+        }
+    }
+
+    public void requestAdvertise() {
+        if (!savedUIData.getClient_status_switch()) {
+            //startAdvertising();
+        } else {
+            // TODO:Request to change the server
+        }
+    }
+
+    public void requestDisconnect() {
+        if (!savedUIData.getClient_status_switch()) {
+            //Nearby.getConnectionsClient(context).stopDiscovery();
+        } else {
+            if (!savedUIData.getServer_status_switch()) {
+                //Nearby.getConnectionsClient(context).stopAdvertising();
+                //Nearby.getConnectionsClient(context).stopAllEndpoints();
+            }
+        }
     }
 
     private String getUserNickname() {

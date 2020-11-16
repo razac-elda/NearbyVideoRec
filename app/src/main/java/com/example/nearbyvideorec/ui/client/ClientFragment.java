@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.nearbyvideorec.MainActivity;
 import com.example.nearbyvideorec.R;
 import com.example.nearbyvideorec.SavedUIData;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -32,8 +33,10 @@ public class ClientFragment extends Fragment {
             // Store status in SavedUIData.
             savedUIData.setClient_status_switch(status);
             if (status) {
+                ((MainActivity)requireActivity()).requestDiscovery();
                 toast.setText("ON");
             } else {
+                ((MainActivity)requireActivity()).requestDisconnect();
                 toast.setText("OFF");
             }
             toast.show();
