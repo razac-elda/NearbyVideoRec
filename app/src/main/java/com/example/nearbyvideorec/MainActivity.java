@@ -75,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
         if (!savedUIData.getClient_status_switch()) {
             //startAdvertising();
         } else {
+            savedUIData.setClient_status_switch(false);
             // TODO:Request to change the server
         }
     }
