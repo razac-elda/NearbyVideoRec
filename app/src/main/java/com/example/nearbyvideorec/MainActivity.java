@@ -85,10 +85,9 @@ public class MainActivity extends AppCompatActivity {
         if (caller.equals("CLIENT")) {
             //Nearby.getConnectionsClient(context).stopDiscovery();
         } else {
-            if (caller.equals("SERVER")) {
-                //Nearby.getConnectionsClient(context).stopAdvertising();
-                //Nearby.getConnectionsClient(context).stopAllEndpoints();
-            }
+            // Caller is SERVER
+            //Nearby.getConnectionsClient(context).stopAdvertising();
+            //Nearby.getConnectionsClient(context).stopAllEndpoints();
         }
     }
 
