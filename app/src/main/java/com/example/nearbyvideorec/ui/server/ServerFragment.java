@@ -36,7 +36,7 @@ public class ServerFragment extends Fragment {
             savedUIData.setServer_status_switch(status);
             send_button.setEnabled(status);
             if (status) {
-                ((MainActivity)requireActivity()).requestAdvertise();
+                ((MainActivity)requireActivity()).requestConnect("SERVER");
                 toast.setText("ON");
             } else {
                 ((MainActivity)requireActivity()).requestDisconnect("SERVER");

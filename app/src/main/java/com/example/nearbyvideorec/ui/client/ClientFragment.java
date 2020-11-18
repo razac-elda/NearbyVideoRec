@@ -33,7 +33,7 @@ public class ClientFragment extends Fragment {
             // Store status in SavedUIData.
             savedUIData.setClient_status_switch(status);
             if (status) {
-                ((MainActivity)requireActivity()).requestDiscovery();
+                ((MainActivity)requireActivity()).requestConnect("CLIENT");
                 toast.setText("ON");
             } else {
                 ((MainActivity)requireActivity()).requestDisconnect("CLIENT");

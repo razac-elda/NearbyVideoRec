@@ -61,22 +61,23 @@ public class MainActivity extends AppCompatActivity {
         SERVICE_ID = getPackageName();
     }
 
-    public void requestDiscovery() {
-        if (!savedUIData.getServer_status_switch()) {
-            //startDiscovery();
+    public void requestConnect(String caller) {
+        if (caller.equals("CLIENT")) {
+            if (!savedUIData.getServer_status_switch()) {
+                //startDiscovery();
+            } else {
+                Log.d("Client/Server", "Cannot switch to discovery if you are the server!");
+                savedUIData.setClient_status_switch(false);
+                // TODO:Find a way to update the UI without switching fragment
+            }
         } else {
-            Log.d("Client/Server", "Cannot switch to discovery if you are the server!");
-            savedUIData.setClient_status_switch(false);
-            // TODO:Find a way to update the UI without switching fragment
-        }
-    }
-
-    public void requestAdvertise() {
-        if (!savedUIData.getClient_status_switch()) {
-            //startAdvertising();
-        } else {
-            savedUIData.setClient_status_switch(false);
-            // TODO:Request to change the server
+            // Caller is SERVER
+            if (!savedUIData.getClient_status_switch()) {
+                //startAdvertising();
+            } else {
+                savedUIData.setClient_status_switch(false);
+                // TODO:Request to change the server
+            }
         }
     }
 
