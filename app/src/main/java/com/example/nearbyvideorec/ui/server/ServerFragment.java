@@ -39,7 +39,7 @@ public class ServerFragment extends Fragment {
                 ((MainActivity)requireActivity()).requestAdvertise();
                 toast.setText("ON");
             } else {
-                ((MainActivity)requireActivity()).requestDisconnect();
+                ((MainActivity)requireActivity()).requestDisconnect("SERVER");
                 toast.setText("OFF");
             }
             toast.show();

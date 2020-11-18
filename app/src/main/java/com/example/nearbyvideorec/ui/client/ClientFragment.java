@@ -36,7 +36,7 @@ public class ClientFragment extends Fragment {
                 ((MainActivity)requireActivity()).requestDiscovery();
                 toast.setText("ON");
             } else {
-                ((MainActivity)requireActivity()).requestDisconnect();
+                ((MainActivity)requireActivity()).requestDisconnect("CLIENT");
                 toast.setText("OFF");
             }
             toast.show();

@@ -80,11 +80,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void requestDisconnect() {
-        if (!savedUIData.getClient_status_switch()) {
+    public void requestDisconnect(String caller) {
+        if (caller.equals("CLIENT")) {
             //Nearby.getConnectionsClient(context).stopDiscovery();
         } else {
-            if (!savedUIData.getServer_status_switch()) {
+            if (caller.equals("SERVER")) {
                 //Nearby.getConnectionsClient(context).stopAdvertising();
                 //Nearby.getConnectionsClient(context).stopAllEndpoints();
             }
