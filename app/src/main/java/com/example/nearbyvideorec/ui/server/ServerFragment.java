@@ -25,7 +25,7 @@ public class ServerFragment extends Fragment {
     private SwitchMaterial status_switch;
     private Button send_button;
 
-    // Switch test.
+    // Switch listener to activate as a server.
     private final View.OnClickListener switch_onClickListener = new View.OnClickListener() {
         @SuppressLint("ShowToast")
         @Override
@@ -46,7 +46,7 @@ public class ServerFragment extends Fragment {
         }
     };
 
-    // Button test.
+    // Test button to be removed
     private final View.OnClickListener button_onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {

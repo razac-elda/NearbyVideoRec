@@ -42,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private static final Strategy STRATEGY = Strategy.P2P_STAR;
 
     private Context context;
+    private Context activity_context;
     private String SERVICE_ID;
 
     @Override
@@ -58,13 +59,14 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
         context = getApplicationContext();
+        activity_context = MainActivity.this;
         SERVICE_ID = getPackageName();
     }
 
     public void requestConnect(String caller) {
         if (caller.equals("CLIENT")) {
             if (!savedUIData.getServer_status_switch()) {
-                //startDiscovery();
+                startDiscovery();
             } else {
                 Log.d("Client/Server", "Cannot switch to discovery if you are the server!");
                 savedUIData.setClient_status_switch(false);
@@ -73,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             // Caller is SERVER
             if (!savedUIData.getClient_status_switch()) {
-                //startAdvertising();
+                startAdvertising();
             } else {
                 savedUIData.setClient_status_switch(false);
                 // TODO:Request to change the server
@@ -81,13 +83,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // TODO: Implement a better disconnection? Maybe clear data? Also update switch
     public void requestDisconnect(String caller) {
         if (caller.equals("CLIENT")) {
-            //Nearby.getConnectionsClient(context).stopDiscovery();
+            Nearby.getConnectionsClient(context).stopDiscovery();
         } else {
             // Caller is SERVER
-            //Nearby.getConnectionsClient(context).stopAdvertising();
-            //Nearby.getConnectionsClient(context).stopAllEndpoints();
+            Nearby.getConnectionsClient(context).stopAdvertising();
+            Nearby.getConnectionsClient(context).stopAllEndpoints();
         }
     }
 
@@ -111,12 +114,12 @@ public class MainActivity extends AppCompatActivity {
                         });
     }
 
-
     private final ConnectionLifecycleCallback connectionLifecycleCallback =
             new ConnectionLifecycleCallback() {
                 @Override
                 public void onConnectionInitiated(String endpointId, ConnectionInfo connectionInfo) {
-                    new AlertDialog.Builder(context)
+                    // TODO:Change AlertDialog style
+                    new AlertDialog.Builder(activity_context, R.style.Theme_MaterialComponents_DayNight)
                             .setTitle("Accept connection to " + connectionInfo.getEndpointName())
                             .setMessage("Confirm the code matches on both devices: " + connectionInfo.getAuthenticationToken())
                             .setPositiveButton(

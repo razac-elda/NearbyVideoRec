@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -22,8 +23,9 @@ public class ClientFragment extends Fragment {
     private SavedUIData savedUIData;
 
     private SwitchMaterial status_switch;
+    private Button send_button;
 
-    // Switch test.
+    // Switch listener to activate as a client.
     private final View.OnClickListener switch_onClickListener = new View.OnClickListener() {
         @SuppressLint("ShowToast")
         @Override
@@ -43,6 +45,16 @@ public class ClientFragment extends Fragment {
         }
     };
 
+    // Test button to be removed
+    private final View.OnClickListener button_onClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Toast toast;
+            toast = Toast.makeText(requireContext(), "SENT", Toast.LENGTH_SHORT);
+            toast.show();
+        }
+    };
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         clientViewModel =
@@ -53,6 +65,10 @@ public class ClientFragment extends Fragment {
         // Switch click listener.
         status_switch = (SwitchMaterial) root.findViewById(R.id.client_status_switch);
         status_switch.setOnClickListener(switch_onClickListener);
+
+        // Button click listener.
+        send_button = (Button) root.findViewById(R.id.send_button_test);
+        send_button.setOnClickListener(button_onClickListener);
         // Restore status from SavedUIData.
         status_switch.setChecked(savedUIData.getClient_status_switch());
 
