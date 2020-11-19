@@ -6,7 +6,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.example.nearbyvideorec.ui.client.ClientFragment;
 import com.google.android.gms.nearby.Nearby;
 import com.google.android.gms.nearby.connection.AdvertisingOptions;
 import com.google.android.gms.nearby.connection.ConnectionInfo;
@@ -30,6 +29,8 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import java.util.HashMap;
+
 public class MainActivity extends AppCompatActivity {
 
     /*
@@ -44,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private Context context;
     private Context activity_context;
     private String SERVICE_ID;
+    private HashMap<String, ConnectionInfo> endpoints_connected;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
         context = getApplicationContext();
         activity_context = MainActivity.this;
         SERVICE_ID = getPackageName();
+        endpoints_connected = new HashMap<>();
     }
 
     public void requestConnect(String caller) {
@@ -87,15 +90,17 @@ public class MainActivity extends AppCompatActivity {
     public void requestDisconnect(String caller) {
         if (caller.equals("CLIENT")) {
             Nearby.getConnectionsClient(context).stopDiscovery();
+            savedUIData.setClient_status_switch(false);
         } else {
             // Caller is SERVER
             Nearby.getConnectionsClient(context).stopAdvertising();
             Nearby.getConnectionsClient(context).stopAllEndpoints();
+            savedUIData.setServer_status_switch(false);
         }
     }
 
     private String getUserNickname() {
-        return  Build.MANUFACTURER.toUpperCase() + " " + Build.MODEL;
+        return Build.MANUFACTURER.toUpperCase() + " " + Build.MODEL;
     }
 
     private void startAdvertising() {
@@ -116,9 +121,10 @@ public class MainActivity extends AppCompatActivity {
 
     private final ConnectionLifecycleCallback connectionLifecycleCallback =
             new ConnectionLifecycleCallback() {
+                ConnectionInfo temp_connectionInfo;
                 @Override
                 public void onConnectionInitiated(String endpointId, ConnectionInfo connectionInfo) {
-                    // TODO:Change AlertDialog style
+                    temp_connectionInfo = connectionInfo;
                     new AlertDialog.Builder(activity_context, R.style.Theme_ConnectionDialog)
                             .setTitle(getString(R.string.accept_connection_to) + " " + connectionInfo.getEndpointName())
                             .setMessage(getString(R.string.confirm_device_code) + " " + connectionInfo.getAuthenticationToken())
@@ -143,6 +149,7 @@ public class MainActivity extends AppCompatActivity {
                     switch (result.getStatus().getStatusCode()) {
                         case ConnectionsStatusCodes.STATUS_OK:
                             // TODO:We're connected! Can now start sending and receiving data.
+                            endpoints_connected.put(endpointId, temp_connectionInfo);
                             break;
                         case ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED:
                             // TODO:The connection was rejected by one or both sides.
@@ -159,6 +166,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onDisconnected(String endpointId) {
                     /* TODO:We've been disconnected from this endpoint. No more data can be
                         sent or received. */
+                    endpoints_connected.remove(endpointId);
                 }
             };
 

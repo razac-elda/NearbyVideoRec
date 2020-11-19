@@ -30,19 +30,15 @@ public class ServerFragment extends Fragment {
         @SuppressLint("ShowToast")
         @Override
         public void onClick(View v) {
-            Toast toast = Toast.makeText(requireContext(), "", Toast.LENGTH_SHORT);
             boolean status = ((SwitchMaterial) v).isChecked();
             // Store status in SavedUIData.
             savedUIData.setServer_status_switch(status);
             send_button.setEnabled(status);
             if (status) {
                 ((MainActivity)requireActivity()).requestConnect("SERVER");
-                toast.setText("ON");
             } else {
                 ((MainActivity)requireActivity()).requestDisconnect("SERVER");
-                toast.setText("OFF");
             }
-            toast.show();
         }
     };
 
@@ -72,6 +68,7 @@ public class ServerFragment extends Fragment {
         // Button click listener.
         send_button = (Button) root.findViewById(R.id.server_send_button);
         send_button.setOnClickListener(button_onClickListener);
+
         // Restore status from SavedUIData(switch dependant).
         send_button.setEnabled(savedUIData.getServer_status_switch());
 

@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -24,24 +25,21 @@ public class ClientFragment extends Fragment {
 
     private SwitchMaterial status_switch;
     private Button send_button;
+    private TextView connection_status;
 
     // Switch listener to activate as a client.
     private final View.OnClickListener switch_onClickListener = new View.OnClickListener() {
         @SuppressLint("ShowToast")
         @Override
         public void onClick(View v) {
-            Toast toast = Toast.makeText(requireContext(), "", Toast.LENGTH_SHORT);
             boolean status = ((SwitchMaterial) v).isChecked();
             // Store status in SavedUIData.
             savedUIData.setClient_status_switch(status);
             if (status) {
                 ((MainActivity)requireActivity()).requestConnect("CLIENT");
-                toast.setText("ON");
             } else {
                 ((MainActivity)requireActivity()).requestDisconnect("CLIENT");
-                toast.setText("OFF");
             }
-            toast.show();
         }
     };
 
@@ -69,8 +67,12 @@ public class ClientFragment extends Fragment {
         // Button click listener.
         send_button = (Button) root.findViewById(R.id.send_button_test);
         send_button.setOnClickListener(button_onClickListener);
+
+        connection_status = (TextView) root.findViewById(R.id.client_status);
+
         // Restore status from SavedUIData.
         status_switch.setChecked(savedUIData.getClient_status_switch());
+        connection_status.setText(savedUIData.getClient_connection_status());
 
         return root;
     }
