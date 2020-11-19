@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String getUserNickname() {
-        return Build.MANUFACTURER + "_" + Build.MODEL;
+        return  Build.MANUFACTURER.toUpperCase() + " " + Build.MODEL;
     }
 
     private void startAdvertising() {
@@ -119,22 +119,22 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onConnectionInitiated(String endpointId, ConnectionInfo connectionInfo) {
                     // TODO:Change AlertDialog style
-                    new AlertDialog.Builder(activity_context, R.style.Theme_MaterialComponents_DayNight)
-                            .setTitle("Accept connection to " + connectionInfo.getEndpointName())
-                            .setMessage("Confirm the code matches on both devices: " + connectionInfo.getAuthenticationToken())
+                    new AlertDialog.Builder(activity_context, R.style.Theme_ConnectionDialog)
+                            .setTitle(getString(R.string.accept_connection_to) + " " + connectionInfo.getEndpointName())
+                            .setMessage(getString(R.string.confirm_device_code) + " " + connectionInfo.getAuthenticationToken())
                             .setPositiveButton(
-                                    "Accept",
+                                    android.R.string.yes,
                                     (DialogInterface dialog, int which) ->
                                             // The user confirmed, so we can accept the connection.
                                             Nearby.getConnectionsClient(context)
                                                     .acceptConnection(endpointId, payloadCallback))
                             .setNegativeButton(
-                                    android.R.string.cancel,
+                                    android.R.string.no,
                                     (DialogInterface dialog, int which) ->
                                             // The user canceled, so we should reject the connection.
                                             Nearby.getConnectionsClient(context).rejectConnection(endpointId))
-                            .setIcon(android.R.drawable.ic_dialog_alert)
-                            .show();
+                            .setIcon(R.drawable.ic_baseline_warning)
+                            .show().setCanceledOnTouchOutside(false);
 
                 }
 

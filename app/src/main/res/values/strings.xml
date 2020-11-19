@@ -11,4 +11,6 @@
     <string name="server_status_offline">Server offline</string>
     <string name="server_status_online">Server online</string>
     <string name="server_send">Send</string>
+    <string name="accept_connection_to">Accept connection to</string>
+    <string name="confirm_device_code">Confirm the code matches on both devices:</string>
 </resources>
