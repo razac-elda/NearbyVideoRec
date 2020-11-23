@@ -98,9 +98,9 @@ public class MainActivity extends AppCompatActivity {
         } else {
             // Caller is SERVER
             Nearby.getConnectionsClient(context).stopAdvertising();
-            Nearby.getConnectionsClient(context).stopAllEndpoints();
             savedUIData.setServer_status_switch(false);
         }
+        Nearby.getConnectionsClient(context).stopAllEndpoints();
         connectedEndpoints.clear();
     }
 
