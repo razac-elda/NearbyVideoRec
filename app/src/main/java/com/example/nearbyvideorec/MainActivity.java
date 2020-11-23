@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private Context context;
     private Context activity_context;
     private String SERVICE_ID;
-    private HashMap<String, ConnectionInfo> endpoints_connected;
+    private HashMap<String, ConnectionInfo> connectedEndpoints;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +63,11 @@ public class MainActivity extends AppCompatActivity {
         context = getApplicationContext();
         activity_context = MainActivity.this;
         SERVICE_ID = getPackageName();
-        endpoints_connected = new HashMap<>();
+        connectedEndpoints = new HashMap<>();
+    }
+
+    public HashMap<String, ConnectionInfo> getConnectedEndpoints() {
+        return connectedEndpoints;
     }
 
     public void requestConnect(String caller) {
@@ -97,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
             Nearby.getConnectionsClient(context).stopAllEndpoints();
             savedUIData.setServer_status_switch(false);
         }
+        connectedEndpoints.clear();
     }
 
     private String getUserNickname() {
@@ -122,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
     private final ConnectionLifecycleCallback connectionLifecycleCallback =
             new ConnectionLifecycleCallback() {
                 ConnectionInfo temp_connectionInfo;
+
                 @Override
                 public void onConnectionInitiated(String endpointId, ConnectionInfo connectionInfo) {
                     temp_connectionInfo = connectionInfo;
@@ -149,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
                     switch (result.getStatus().getStatusCode()) {
                         case ConnectionsStatusCodes.STATUS_OK:
                             // TODO:We're connected! Can now start sending and receiving data.
-                            endpoints_connected.put(endpointId, temp_connectionInfo);
+                            connectedEndpoints.put(endpointId, temp_connectionInfo);
                             break;
                         case ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED:
                             // TODO:The connection was rejected by one or both sides.
@@ -166,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onDisconnected(String endpointId) {
                     /* TODO:We've been disconnected from this endpoint. No more data can be
                         sent or received. */
-                    endpoints_connected.remove(endpointId);
+                    connectedEndpoints.remove(endpointId);
                 }
             };
 

@@ -35,9 +35,9 @@ public class ServerFragment extends Fragment {
             savedUIData.setServer_status_switch(status);
             send_button.setEnabled(status);
             if (status) {
-                ((MainActivity)requireActivity()).requestConnect("SERVER");
+                ((MainActivity) requireActivity()).requestConnect("SERVER");
             } else {
-                ((MainActivity)requireActivity()).requestDisconnect("SERVER");
+                ((MainActivity) requireActivity()).requestDisconnect("SERVER");
             }
         }
     };
@@ -62,12 +62,13 @@ public class ServerFragment extends Fragment {
         // Switch click listener.
         status_switch = (SwitchMaterial) root.findViewById(R.id.server_activation_switch);
         status_switch.setOnClickListener(switch_onClickListener);
-        // Restore status from SavedUIData.
-        status_switch.setChecked(savedUIData.getServer_status_switch());
 
         // Button click listener.
         send_button = (Button) root.findViewById(R.id.server_send_button);
         send_button.setOnClickListener(button_onClickListener);
+
+        // Restore status from SavedUIData.
+        status_switch.setChecked(savedUIData.getServer_status_switch());
 
         // Restore status from SavedUIData(switch dependant).
         send_button.setEnabled(savedUIData.getServer_status_switch());

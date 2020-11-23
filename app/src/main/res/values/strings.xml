@@ -5,7 +5,9 @@
     <string name="title_video">Video</string>
     <string name="activate_as_a_client">Activate as a client</string>
     <string name="activate_as_a_server">Activate as a server</string>
-    <string name="client_not_connected">Not connected</string>
+    <string name="client_not_connected">Not connected to a server</string>
+    <string name="client_connected_to">Connected to:</string>
+    <string name="connected_as_a_server">You are connected as a server</string>
     <string name="client_status_offline">Client offline</string>
     <string name="client_status_online">Client online</string>
     <string name="server_status_offline">Server offline</string>

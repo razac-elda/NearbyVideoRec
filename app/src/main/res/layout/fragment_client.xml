@@ -39,7 +39,7 @@
         android:fontFamily="sans-serif"
         android:text="@string/client_not_connected"
         android:textAlignment="viewStart"
-        android:textColor="#D32F2F"
+        android:textColor="@color/red"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
