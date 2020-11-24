@@ -29,6 +29,8 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -143,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
                 ConnectionInfo temp_connectionInfo;
 
                 @Override
-                public void onConnectionInitiated(String endpointId, ConnectionInfo connectionInfo) {
+                public void onConnectionInitiated(@NotNull String endpointId, ConnectionInfo connectionInfo) {
                     temp_connectionInfo = connectionInfo;
                     new AlertDialog.Builder(activity_context, R.style.Theme_ConnectionDialog)
                             .setTitle(getString(R.string.accept_connection_to) + " " + connectionInfo.getEndpointName() + "?")
@@ -165,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void onConnectionResult(String endpointId, ConnectionResolution result) {
+                public void onConnectionResult(@NotNull String endpointId, ConnectionResolution result) {
                     switch (result.getStatus().getStatusCode()) {
                         case ConnectionsStatusCodes.STATUS_OK:
                             // TODO:We're connected! Can now start sending and receiving data.
@@ -191,17 +193,21 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void onDisconnected(String endpointId) {
+                public void onDisconnected(@NotNull String endpointId) {
                     /* TODO:We've been disconnected from this endpoint. No more data can be
                         sent or received. */
-                    Toast.makeText(activity_context, getString(R.string.device_disconnected) +
-                            " " + Objects.requireNonNull(connectedEndpoints.get(endpointId)).getEndpointName(), Toast.LENGTH_LONG).show();
-                    connectedEndpoints.remove(endpointId);
-                    if (deviceRole.equals("Client"))
-                        navController.navigate(R.id.navigation_client);
-                    else
-                        navController.navigate(R.id.navigation_server);
+                    ConnectionInfo endpointInfo = connectedEndpoints.get(endpointId);
+                    if (endpointInfo != null) {
+                        Toast.makeText(activity_context, getString(R.string.device_disconnected)
+                                + " " + endpointInfo.getEndpointName(), Toast.LENGTH_LONG).show();
+                        connectedEndpoints.remove(endpointId);
+                        if (deviceRole.equals("Client"))
+                            navController.navigate(R.id.navigation_client);
+                        else
+                            navController.navigate(R.id.navigation_server);
+                    }
                 }
+
             };
 
     // TODO: Understand what this does and complete, called in onConnectionInitiated above
@@ -236,7 +242,7 @@ public class MainActivity extends AppCompatActivity {
     private final EndpointDiscoveryCallback endpointDiscoveryCallback =
             new EndpointDiscoveryCallback() {
                 @Override
-                public void onEndpointFound(String endpointId, DiscoveredEndpointInfo info) {
+                public void onEndpointFound(@NotNull String endpointId, @NotNull DiscoveredEndpointInfo info) {
                     // An endpoint was found. We request a connection to it.
                     Nearby.getConnectionsClient(context)
                             .requestConnection(getUserNickname(), endpointId, connectionLifecycleCallback)
@@ -252,7 +258,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 @Override
-                public void onEndpointLost(String endpointId) {
+                public void onEndpointLost(@NotNull String endpointId) {
                     // TODO:A previously discovered endpoint has gone away.
                 }
             };
