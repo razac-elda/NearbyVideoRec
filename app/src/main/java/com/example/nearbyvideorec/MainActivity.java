@@ -177,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
                             else
                                 navController.navigate(R.id.navigation_server);
                             Toast.makeText(activity_context, getString(R.string.connected_to) +
-                                    " " + Objects.requireNonNull(connectedEndpoints.get(endpointId)).getEndpointName(), Toast.LENGTH_LONG).show();
+                                    " " + temp_connectionInfo.getEndpointName(), Toast.LENGTH_LONG).show();
                             break;
                         case ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED:
                             // TODO:The connection was rejected by one or both sides.

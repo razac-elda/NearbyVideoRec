@@ -25,4 +25,5 @@
     <string name="connected_to">Connected to:</string>
     <string name="connection_rejected">Connection rejected!</string>
     <string name="connection_error">Connection error!</string>
+    <string name="permissions_denied">Permissions denied</string>
 </resources>
