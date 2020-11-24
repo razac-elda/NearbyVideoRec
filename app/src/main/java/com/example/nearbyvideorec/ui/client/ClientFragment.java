@@ -20,7 +20,6 @@ import com.example.nearbyvideorec.SavedUIData;
 import com.google.android.gms.nearby.connection.ConnectionInfo;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
-import java.util.Collection;
 import java.util.HashMap;
 
 public class ClientFragment extends Fragment {

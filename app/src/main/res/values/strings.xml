@@ -15,4 +15,14 @@
     <string name="server_send">Send</string>
     <string name="accept_connection_to">Accept connection to</string>
     <string name="confirm_device_code">Confirm the code matches on both devices:</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="error">Error</string>
+    <string name="error_discovery_server">Cannot switch to discovery if you are the server!</string>
+    <string name="advertising">Advertising</string>
+    <string name="discovering">Discovering</string>
+    <string name="device_disconnected">Device disconnected:</string>
+    <string name="connected_to">Connected to:</string>
+    <string name="connection_rejected">Connection rejected!</string>
+    <string name="connection_error">Connection error!</string>
 </resources>

@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.nearby.Nearby;
 import com.google.android.gms.nearby.connection.AdvertisingOptions;
@@ -30,9 +30,11 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
+    private NavController navController;
     /*
      * Singleton implemented with enum, used to save UI elements status when switching fragments.
      * Each fragment uses this singleton to obtain own UI element status, only if needed.
@@ -41,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private SavedUIData savedUIData;
     // Select strategy for nearby connection
     private static final Strategy STRATEGY = Strategy.P2P_STAR;
+    private String deviceRole;
 
     private Context context;
     private Context activity_context;
@@ -57,7 +60,8 @@ public class MainActivity extends AppCompatActivity {
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.navigation_client, R.id.navigation_server, R.id.navigation_video)
                 .build();
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        // Later we use the navController to refresh the fragment
+        navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
         context = getApplicationContext();
@@ -73,32 +77,41 @@ public class MainActivity extends AppCompatActivity {
     public void requestConnect(String caller) {
         if (caller.equals("CLIENT")) {
             if (!savedUIData.getServer_status_switch()) {
+                deviceRole = "Client";
                 startDiscovery();
             } else {
-                Log.d("Client/Server", "Cannot switch to discovery if you are the server!");
+                new AlertDialog.Builder(activity_context, R.style.Theme_ConnectionDialog)
+                        .setTitle(getString(R.string.error))
+                        .setMessage(getString(R.string.error_discovery_server))
+                        .setPositiveButton(getString(R.string.ok), null)
+                        .setIcon(R.drawable.ic_baseline_warning)
+                        .show();
                 savedUIData.setClient_status_switch(false);
-                // TODO:Find a way to update the UI without switching fragment
             }
+            navController.navigate(R.id.navigation_client);
         } else {
             // Caller is SERVER
             if (!savedUIData.getClient_status_switch()) {
+                deviceRole = "Server";
                 startAdvertising();
             } else {
                 savedUIData.setClient_status_switch(false);
                 // TODO:Request to change the server
             }
+            navController.navigate(R.id.navigation_server);
         }
     }
 
-    // TODO: Implement a better disconnection? Maybe clear data? Also update switch
     public void requestDisconnect(String caller) {
         if (caller.equals("CLIENT")) {
             Nearby.getConnectionsClient(context).stopDiscovery();
             savedUIData.setClient_status_switch(false);
+            navController.navigate(R.id.navigation_client);
         } else {
             // Caller is SERVER
             Nearby.getConnectionsClient(context).stopAdvertising();
             savedUIData.setServer_status_switch(false);
+            navController.navigate(R.id.navigation_server);
         }
         Nearby.getConnectionsClient(context).stopAllEndpoints();
         connectedEndpoints.clear();
@@ -117,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
                 .addOnSuccessListener(
                         (Void unused) -> {
                             // TODO:We're advertising!
+                            Toast.makeText(activity_context, getString(R.string.advertising), Toast.LENGTH_SHORT).show();
                         })
                 .addOnFailureListener(
                         (Exception e) -> {
@@ -132,16 +146,16 @@ public class MainActivity extends AppCompatActivity {
                 public void onConnectionInitiated(String endpointId, ConnectionInfo connectionInfo) {
                     temp_connectionInfo = connectionInfo;
                     new AlertDialog.Builder(activity_context, R.style.Theme_ConnectionDialog)
-                            .setTitle(getString(R.string.accept_connection_to) + " " + connectionInfo.getEndpointName())
+                            .setTitle(getString(R.string.accept_connection_to) + " " + connectionInfo.getEndpointName() + "?")
                             .setMessage(getString(R.string.confirm_device_code) + " " + connectionInfo.getAuthenticationToken())
                             .setPositiveButton(
-                                    android.R.string.yes,
+                                    getString(R.string.ok),
                                     (DialogInterface dialog, int which) ->
                                             // The user confirmed, so we can accept the connection.
                                             Nearby.getConnectionsClient(context)
                                                     .acceptConnection(endpointId, payloadCallback))
                             .setNegativeButton(
-                                    android.R.string.no,
+                                    getString(R.string.cancel),
                                     (DialogInterface dialog, int which) ->
                                             // The user canceled, so we should reject the connection.
                                             Nearby.getConnectionsClient(context).rejectConnection(endpointId))
@@ -156,12 +170,20 @@ public class MainActivity extends AppCompatActivity {
                         case ConnectionsStatusCodes.STATUS_OK:
                             // TODO:We're connected! Can now start sending and receiving data.
                             connectedEndpoints.put(endpointId, temp_connectionInfo);
+                            if (deviceRole.equals("Client"))
+                                navController.navigate(R.id.navigation_client);
+                            else
+                                navController.navigate(R.id.navigation_server);
+                            Toast.makeText(activity_context, getString(R.string.connected_to) +
+                                    " " + Objects.requireNonNull(connectedEndpoints.get(endpointId)).getEndpointName(), Toast.LENGTH_LONG).show();
                             break;
                         case ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED:
                             // TODO:The connection was rejected by one or both sides.
+                            Toast.makeText(activity_context, getString(R.string.connection_rejected), Toast.LENGTH_SHORT).show();
                             break;
                         case ConnectionsStatusCodes.STATUS_ERROR:
                             // TODO:The connection broke before it was able to be accepted.
+                            Toast.makeText(activity_context, getString(R.string.connection_error), Toast.LENGTH_SHORT).show();
                             break;
                         default:
                             // TODO:Unknown status code
@@ -172,7 +194,13 @@ public class MainActivity extends AppCompatActivity {
                 public void onDisconnected(String endpointId) {
                     /* TODO:We've been disconnected from this endpoint. No more data can be
                         sent or received. */
+                    Toast.makeText(activity_context, getString(R.string.device_disconnected) +
+                            " " + Objects.requireNonNull(connectedEndpoints.get(endpointId)).getEndpointName(), Toast.LENGTH_LONG).show();
                     connectedEndpoints.remove(endpointId);
+                    if (deviceRole.equals("Client"))
+                        navController.navigate(R.id.navigation_client);
+                    else
+                        navController.navigate(R.id.navigation_server);
                 }
             };
 
@@ -197,6 +225,7 @@ public class MainActivity extends AppCompatActivity {
                 .addOnSuccessListener(
                         (Void unused) -> {
                             // TODO:We're discovering!
+                            Toast.makeText(activity_context, getString(R.string.discovering), Toast.LENGTH_SHORT).show();
                         })
                 .addOnFailureListener(
                         (Exception e) -> {
