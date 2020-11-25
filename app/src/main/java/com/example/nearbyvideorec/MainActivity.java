@@ -31,6 +31,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -210,15 +211,23 @@ public class MainActivity extends AppCompatActivity {
 
             };
 
-    // TODO: Understand what this does and complete, called in onConnectionInitiated above
+    public void sendMessage(String endpointId, String msg) {
+        byte[] bytes = msg.getBytes(StandardCharsets.UTF_8);
+        Payload bytesPayload = Payload.fromBytes(bytes);
+        Nearby.getConnectionsClient(context).sendPayload(endpointId, bytesPayload);
+    }
+
     private PayloadCallback payloadCallback = new PayloadCallback() {
         @Override
-        public void onPayloadReceived(@NonNull String s, @NonNull Payload payload) {
-
+        public void onPayloadReceived(@NonNull String endpointId, @NonNull Payload payload) {
+            if (payload.getType() == Payload.Type.BYTES) {
+                String msg = new String(payload.asBytes(), StandardCharsets.UTF_8);
+                Toast.makeText(activity_context, msg, Toast.LENGTH_LONG).show();
+            }
         }
 
         @Override
-        public void onPayloadTransferUpdate(@NonNull String s, @NonNull PayloadTransferUpdate payloadTransferUpdate) {
+        public void onPayloadTransferUpdate(@NonNull String endpointId, @NonNull PayloadTransferUpdate payloadTransferUpdate) {
 
         }
     };

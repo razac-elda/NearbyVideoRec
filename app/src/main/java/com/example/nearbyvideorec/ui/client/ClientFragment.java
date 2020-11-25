@@ -63,9 +63,8 @@ public class ClientFragment extends Fragment {
     private final View.OnClickListener button_onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Toast toast;
-            toast = Toast.makeText(requireContext(), "SENT", Toast.LENGTH_SHORT);
-            toast.show();
+            for (String key : connectedDevices.keySet())
+                ((MainActivity) requireActivity()).sendMessage(key, "Ciao mamma");
         }
     };
 
