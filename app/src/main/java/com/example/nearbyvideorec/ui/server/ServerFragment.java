@@ -1,15 +1,18 @@
 package com.example.nearbyvideorec.ui.server;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -17,7 +20,12 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.nearbyvideorec.MainActivity;
 import com.example.nearbyvideorec.R;
 import com.example.nearbyvideorec.SavedUIData;
+import com.google.android.gms.nearby.connection.ConnectionInfo;
 import com.google.android.material.switchmaterial.SwitchMaterial;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class ServerFragment extends Fragment {
 
@@ -32,7 +40,12 @@ public class ServerFragment extends Fragment {
     private SavedUIData savedUIData;
 
     private SwitchMaterial status_switch;
-    private Button send_button;
+    private Button select_button;
+    private Button start_button;
+    private Button stop_button;
+    private TextView selected_device;
+
+    private HashMap<String, ConnectionInfo> connectedDevices;
 
     // Switch listener, check permissions first and then activate the server.
     private final View.OnClickListener switch_onClickListener = new View.OnClickListener() {
@@ -51,8 +64,54 @@ public class ServerFragment extends Fragment {
         }
     };
 
-    // Test button to be removed
-    private final View.OnClickListener button_onClickListener = new View.OnClickListener() {
+    // Select device button listener
+    private final View.OnClickListener select_onClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            List<String> deviceName = new ArrayList<>();
+
+            /*
+            * Create an AlertDialog to choose the target device for start/stop recording.
+            * connectedDevices is a HashMap<String, ConnectionInfo> that refers to connectedEndpoints
+            * in the MainActivity, where all connected devices are saved.
+            * We add the endpoints name to a List<String> deviceName.
+            * Since AlertDialog needs a String array we transfer the object from deviceName to
+            * deviceNameArray.
+            */
+
+            connectedDevices = ((MainActivity) requireActivity()).getConnectedEndpoints();
+            for (ConnectionInfo info : connectedDevices.values())
+                deviceName.add(info.getEndpointName());
+
+            String[]  deviceNameArray = deviceName.toArray(new String[0]);
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
+            builder.setTitle(R.string.server_select_a_device);
+            builder.setItems(deviceNameArray, new DialogInterface.OnClickListener() {
+
+                //Set the TextView with the device chosen
+                @Override
+                public void onClick(DialogInterface dialog, int pos) {
+                    selected_device.setText(deviceNameArray[pos]);
+                }
+            });
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
+    };
+
+    // Start recording button listener
+    private final View.OnClickListener start_onClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Toast toast;
+            toast = Toast.makeText(requireContext(), "SENT", Toast.LENGTH_SHORT);
+            toast.show();
+        }
+    };
+
+    // Stop recording button listener
+    private final View.OnClickListener stop_onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             Toast toast;
@@ -73,15 +132,27 @@ public class ServerFragment extends Fragment {
         status_switch = (SwitchMaterial) root.findViewById(R.id.server_activation_switch);
         status_switch.setOnClickListener(switch_onClickListener);
 
-        // Button click listener.
-        send_button = (Button) root.findViewById(R.id.server_send_button);
-        send_button.setOnClickListener(button_onClickListener);
+        // Select button click listener.
+        select_button = (Button) root.findViewById(R.id.server_select_device_button);
+        select_button.setOnClickListener(select_onClickListener);
+
+        // Start button click listener.
+        start_button = (Button) root.findViewById(R.id.server_start_rec_button);
+        start_button.setOnClickListener(start_onClickListener);
+
+        // Stop button click listener.
+        stop_button = (Button) root.findViewById(R.id.server_stop_rec_button);
+        stop_button.setOnClickListener(stop_onClickListener);
+
+        selected_device = (TextView) root.findViewById(R.id.selected_device);
 
         // Restore status from SavedUIData.
         status_switch.setChecked(savedUIData.getServer_status_switch());
 
         // Restore status from SavedUIData(switch dependant).
-        send_button.setEnabled(savedUIData.getServer_status_switch());
+        select_button.setEnabled(savedUIData.getServer_status_switch());
+        start_button.setEnabled(savedUIData.getServer_status_switch());
+        stop_button.setEnabled(savedUIData.getServer_status_switch());
 
         return root;
     }
@@ -91,7 +162,9 @@ public class ServerFragment extends Fragment {
         boolean status = ((SwitchMaterial) v).isChecked();
         // Store status in SavedUIData.
         savedUIData.setServer_status_switch(status);
-        send_button.setEnabled(status);
+        select_button.setEnabled(status);
+        start_button.setEnabled(status);
+        stop_button.setEnabled(status);
 
         // Switch on->start server, switch off->disconnect
         if (status) {

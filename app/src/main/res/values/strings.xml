@@ -12,7 +12,9 @@
     <string name="client_status_online">Client online</string>
     <string name="server_status_offline">Server offline</string>
     <string name="server_status_online">Server online</string>
-    <string name="server_send">Send</string>
+    <string name="server_select_a_device">Select a device</string>
+    <string name="server_start_video">Start</string>
+    <string name="server_stop_video">Stop</string>
     <string name="accept_connection_to">Accept connection to</string>
     <string name="confirm_device_code">Confirm the code matches on both devices:</string>
     <string name="ok">OK</string>
@@ -26,4 +28,5 @@
     <string name="connection_rejected">Connection rejected!</string>
     <string name="connection_error">Connection error!</string>
     <string name="permissions_denied">Permissions denied</string>
+    <string name="no_device_selected">No device selected</string>
 </resources>
