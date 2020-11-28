@@ -98,8 +98,14 @@ public class MainActivity extends AppCompatActivity {
                 deviceRole = "Server";
                 startAdvertising();
             } else {
+                String endpointId = null;
+                for (String endpoint : connectedEndpoints.keySet())
+                    endpointId = endpoint;
+                sendMessage(endpointId, "Change");
+                startAdvertising();
+                Nearby.getConnectionsClient(context).stopDiscovery();
                 savedUIData.setClient_status_switch(false);
-                // TODO:Request to change the server
+                savedUIData.setServer_status_switch(true);
             }
             navController.navigate(R.id.navigation_server);
         }
@@ -212,9 +218,11 @@ public class MainActivity extends AppCompatActivity {
             };
 
     public void sendMessage(String endpointId, String msg) {
-        byte[] bytes = msg.getBytes(StandardCharsets.UTF_8);
-        Payload bytesPayload = Payload.fromBytes(bytes);
-        Nearby.getConnectionsClient(context).sendPayload(endpointId, bytesPayload);
+        if (endpointId != null) {
+            byte[] bytes = msg.getBytes(StandardCharsets.UTF_8);
+            Payload bytesPayload = Payload.fromBytes(bytes);
+            Nearby.getConnectionsClient(context).sendPayload(endpointId, bytesPayload);
+        }
     }
 
     private PayloadCallback payloadCallback = new PayloadCallback() {
@@ -222,7 +230,17 @@ public class MainActivity extends AppCompatActivity {
         public void onPayloadReceived(@NonNull String endpointId, @NonNull Payload payload) {
             if (payload.getType() == Payload.Type.BYTES) {
                 String msg = new String(payload.asBytes(), StandardCharsets.UTF_8);
-                Toast.makeText(activity_context, msg, Toast.LENGTH_LONG).show();
+                switch (msg) {
+                    case "Change":
+                        startDiscovery();
+                        Nearby.getConnectionsClient(context).stopAdvertising();
+                        savedUIData.setClient_status_switch(true);
+                        savedUIData.setServer_status_switch(false);
+                        navController.navigate(R.id.navigation_client);
+                    default:
+                        Toast.makeText(activity_context, msg, Toast.LENGTH_LONG).show();
+                        break;
+                }
             }
         }
 
