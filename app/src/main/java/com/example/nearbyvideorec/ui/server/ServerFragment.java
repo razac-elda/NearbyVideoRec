@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -84,7 +85,9 @@ public class ServerFragment extends Fragment {
                 deviceName.add(info.getEndpointName());
 
             String[]  deviceNameArray = deviceName.toArray(new String[0]);
-
+            // TODO:Debug muli-device list
+            for (String i : deviceNameArray)
+                Log.d("A", i);
             AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
             builder.setTitle(R.string.server_select_a_device);
             builder.setItems(deviceNameArray, new DialogInterface.OnClickListener() {
