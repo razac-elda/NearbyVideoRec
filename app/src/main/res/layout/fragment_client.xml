@@ -39,11 +39,21 @@
         android:fontFamily="sans-serif"
         android:text="@string/client_not_connected"
         android:textAlignment="viewStart"
-        android:textColor="#D32F2F"
+        android:textColor="@color/red"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/client_status_switch" />
+
+    <Button
+        android:id="@+id/send_button_test"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Button"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

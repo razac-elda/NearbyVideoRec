@@ -13,7 +13,7 @@
         android:layout_marginStart="32dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="8dp"
         android:fontFamily="sans-serif"
         android:text="@string/activate_as_a_server"
         android:textColor="@android:color/tertiary_text_light"
@@ -29,17 +29,63 @@
         app:layout_constraintVertical_bias="0.0" />
 
     <Button
-        android:id="@+id/server_send_button"
+        android:id="@+id/server_start_rec_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:text="@string/server_send"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/server_start_video"
+        app:layout_constraintBottom_toTopOf="@+id/server_stop_rec_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/selected_device"
+        app:layout_constraintVertical_bias="0.39" />
+
+    <Button
+        android:id="@+id/server_stop_rec_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/server_stop_video"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/selected_device"
+        app:layout_constraintVertical_bias="0.3" />
+
+    <TextView
+        android:id="@+id/selected_device"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/textview_border"
+        android:gravity="center"
+        android:text="@string/no_device_selected"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/server_activation_switch"
-        app:layout_constraintVertical_bias="0.050000012"/>
+        app:layout_constraintVertical_bias="0.25" />
+
+    <Button
+        android:id="@+id/server_select_device_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/server_select_a_device"
+        app:layout_constraintBottom_toTopOf="@+id/selected_device"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.51"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/server_activation_switch" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
