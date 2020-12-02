@@ -2,10 +2,14 @@ package com.example.nearbyvideorec;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import com.example.nearbyvideorec.ui.server.ServerFragment;
 import com.google.android.gms.nearby.Nearby;
 import com.google.android.gms.nearby.connection.AdvertisingOptions;
 import com.google.android.gms.nearby.connection.ConnectionInfo;
@@ -51,13 +55,40 @@ public class MainActivity extends AppCompatActivity {
     private Context context;
     private Context activity_context;
     private String SERVICE_ID;
+    private Boolean legacy;
     private HashMap<String, ConnectionInfo> connectedEndpoints;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
+
+        context = getApplicationContext();
+        activity_context = MainActivity.this;
+        SERVICE_ID = getPackageName();
+        connectedEndpoints = new HashMap<>();
+
         setContentView(R.layout.activity_main);
+
+        // Check camera API level
+        CameraManager manager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
+        legacy = false;
+        try {
+            // Cycle through all cameras
+            for (String cameraId : manager.getCameraIdList()) {
+
+                CameraCharacteristics characteristics
+                        = manager.getCameraCharacteristics(cameraId);
+
+                // If back camera API support is LEGACY we mark it as "legacy" to avoid using Camera2 API
+                if (characteristics.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK) {
+                    if (characteristics.get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL) ==
+                            CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY)
+                        legacy = true;
+                }
+            }
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
 
         // Singleton created for the first and only time.
         savedUIData = SavedUIData.INSTANCE;
@@ -71,10 +102,10 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
 
-        context = getApplicationContext();
-        activity_context = MainActivity.this;
-        SERVICE_ID = getPackageName();
-        connectedEndpoints = new HashMap<>();
+    }
+
+    public Boolean getLegacy() {
+        return legacy;
     }
 
     public HashMap<String, ConnectionInfo> getConnectedEndpoints() {
@@ -286,7 +317,7 @@ public class MainActivity extends AppCompatActivity {
                          * Idea:Send to other devices a request to switch off-on discovery without
                          * disconnecting. Maybe send new Server endpointId and connect with requestConnection
                          * Unknown:Connection needs to authenticate again?
-                        */
+                         */
                         startDiscovery();
                         Nearby.getConnectionsClient(context).stopAdvertising();
                         savedUIData.setClient_status_switch(true);
