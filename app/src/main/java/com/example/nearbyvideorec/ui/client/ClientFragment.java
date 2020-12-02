@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
+import android.icu.text.SimpleDateFormat;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -39,6 +40,7 @@ import com.otaliastudios.cameraview.controls.Mode;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
+import java.util.Date;
 import java.util.HashMap;
 
 public class ClientFragment extends Fragment {
@@ -84,13 +86,18 @@ public class ClientFragment extends Fragment {
         }
     };
 
+    private String getTimeStampString() {
+        Date data_time = new Date();
+        return new SimpleDateFormat("yyyyMMdd_hhmm").format(data_time);
+    }
+
     // Test button to be removed, temporary holder for starting video recording
     private final View.OnClickListener rec_button_onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             File createdVideo = null;
             resolver = requireContext().getContentResolver();
-            String videoFileName = "video_" + System.currentTimeMillis() + ".mp4";
+            String videoFileName = "video_" + getTimeStampString() + ".mp4";
             ContentValues valuesVideos = new ContentValues();
             if (Build.VERSION.SDK_INT >= 29) {
                 Uri collection = MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
