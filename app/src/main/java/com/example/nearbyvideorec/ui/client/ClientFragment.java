@@ -3,12 +3,17 @@ package com.example.nearbyvideorec.ui.client;
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,7 +47,9 @@ public class ClientFragment extends Fragment {
     private final String[] REQUIRED_PERMISSIONS = new String[]{
             "android.permission.ACCESS_FINE_LOCATION",
             "android.permission.CAMERA",
-            "android.permission.RECORD_AUDIO"
+            "android.permission.RECORD_AUDIO",
+            "android.permission.WRITE_EXTERNAL_STORAGE",
+            "android.permission.READ_EXTERNAL_STORAGE"
     };
     private View switchView;
 
@@ -77,7 +84,7 @@ public class ClientFragment extends Fragment {
         }
     };
 
-    // Test button to be removed
+    // Test button to be removed, temporary holder for starting video recording
     private final View.OnClickListener rec_button_onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -96,7 +103,7 @@ public class ClientFragment extends Fragment {
                 uriSavedVideo = resolver.insert(collection, valuesVideos);
             } else {
                 String directory = Environment.getExternalStorageDirectory().getAbsolutePath() +
-                        File.separator + Environment.DIRECTORY_MOVIES + "/" + "VideoRec";
+                        File.separator + Environment.DIRECTORY_MOVIES;
 
                 createdVideo = new File(directory, videoFileName);
 
@@ -112,6 +119,7 @@ public class ClientFragment extends Fragment {
             try {
                 FileDescriptor videoFileDescriptor = resolver.openFileDescriptor(uriSavedVideo, "w", null)
                         .getFileDescriptor();
+                camera.setVisibility(View.VISIBLE);
                 camera.takeVideo(videoFileDescriptor);
                 Toast.makeText(requireContext(), "REC", Toast.LENGTH_LONG).show();
             } catch (FileNotFoundException e) {
@@ -130,6 +138,7 @@ public class ClientFragment extends Fragment {
         @Override
         public void onClick(View v) {
             camera.stopVideo();
+            camera.setVisibility(View.INVISIBLE);
             Toast.makeText(requireContext(), "STOP", Toast.LENGTH_LONG).show();
         }
     };
@@ -139,7 +148,31 @@ public class ClientFragment extends Fragment {
 
         clientViewModel =
                 new ViewModelProvider(this).get(ClientViewModel.class);
+
         View root = inflater.inflate(R.layout.fragment_client, container, false);
+
+        camera = root.findViewById(R.id.camera);
+        // If camera is legacy we switch camera xml component
+        if (((MainActivity) requireActivity()).getLegacy()) {
+            camera.setVisibility(View.GONE);
+            camera = root.findViewById(R.id.camera_legacy);
+            camera.setVisibility(View.INVISIBLE);
+            Toast.makeText(requireContext(), "OLD", Toast.LENGTH_LONG).show();
+        }
+
+        camera.setLifecycleOwner(getViewLifecycleOwner());
+        camera.addCameraListener(new CameraListener() {
+            @Override
+            public void onVideoTaken(@NonNull VideoResult result) {
+                if (Build.VERSION.SDK_INT >= 29) {
+                    ContentValues fileDetails = new ContentValues();
+                    fileDetails.put(MediaStore.Video.Media.IS_PENDING, 0);
+                    resolver.update(uriSavedVideo, fileDetails, null, null);
+                }
+            }
+        });
+        camera.setMode(Mode.VIDEO);
+
         savedUIData = SavedUIData.INSTANCE;
 
         // Switch click listener.
@@ -184,19 +217,6 @@ public class ClientFragment extends Fragment {
             String connected_as_server = getString(R.string.connected_as_a_server);
             connection_status.setText(connected_as_server);
         }
-
-        camera = root.findViewById(R.id.camera);
-        camera.setLifecycleOwner(getViewLifecycleOwner());
-        camera.addCameraListener(new CameraListener() {
-            @Override
-            public void onVideoTaken(@NonNull VideoResult result) {
-                ContentValues fileDetails = new ContentValues();
-                if (Build.VERSION.SDK_INT >= 29)
-                    fileDetails.put(MediaStore.Video.Media.IS_PENDING, 0);
-                resolver.update(uriSavedVideo, fileDetails, null, null);
-            }
-        });
-        camera.setMode(Mode.VIDEO);
 
         return root;
     }
