@@ -10,7 +10,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
-import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
@@ -29,6 +28,7 @@ import com.google.android.gms.nearby.connection.PayloadCallback;
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate;
 import com.google.android.gms.nearby.connection.Strategy;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.otaliastudios.cameraview.CameraView;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -51,8 +51,8 @@ public class MainActivity extends AppCompatActivity {
     private Context context;
     private Context activity_context;
     private String SERVICE_ID;
-    private Boolean legacy;
     private HashMap<String, ConnectionInfo> connectedEndpoints;
+    private CameraView camera;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,8 +79,8 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public Boolean getLegacy() {
-        return legacy;
+    public void setCamera(CameraView camera){
+        this.camera = camera;
     }
 
     public HashMap<String, ConnectionInfo> getConnectedEndpoints() {
@@ -104,9 +104,8 @@ public class MainActivity extends AppCompatActivity {
                         .show();
                 savedUIData.setClient_status_switch(false);
             }
-
-            navController.navigate(R.id.navigation_client, null, new NavOptions.Builder()
-                    .setPopUpTo(R.id.navigation_client, true).build());
+            camera.close();
+            navController.navigate(R.id.navigation_client);
 
         } else {
 
@@ -144,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
 
             Nearby.getConnectionsClient(context).stopDiscovery();
             savedUIData.setClient_status_switch(false);
+            camera.close();
             navController.navigate(R.id.navigation_client);
         } else {
 
@@ -218,11 +218,12 @@ public class MainActivity extends AppCompatActivity {
                             // Save new connected endpoint
                             connectedEndpoints.put(endpointId, temp_connectionInfo);
                             // Refresh fragment
-                            if (deviceRole.equals("Client"))
+                            if (deviceRole.equals("Client")) {
+                                camera.close();
                                 navController.navigate(R.id.navigation_client);
-                            else
+                            } else {
                                 navController.navigate(R.id.navigation_server);
-
+                            }
                             Toast.makeText(activity_context, getString(R.string.connected_to) +
                                     " " + temp_connectionInfo.getEndpointName(), Toast.LENGTH_LONG).show();
                             break;
@@ -257,10 +258,12 @@ public class MainActivity extends AppCompatActivity {
                         // Remove old endpoint
                         connectedEndpoints.remove(endpointId);
                         // Refresh fragments
-                        if (deviceRole.equals("Client"))
+                        if (deviceRole.equals("Client")) {
+                            camera.close();
                             navController.navigate(R.id.navigation_client);
-                        else
+                        } else {
                             navController.navigate(R.id.navigation_server);
+                        }
                     }
                 }
 
@@ -299,6 +302,7 @@ public class MainActivity extends AppCompatActivity {
                         Nearby.getConnectionsClient(context).stopAdvertising();
                         savedUIData.setClient_status_switch(true);
                         savedUIData.setServer_status_switch(false);
+                        camera.close();
                         navController.navigate(R.id.navigation_client);
                         break;
 
@@ -358,6 +362,4 @@ public class MainActivity extends AppCompatActivity {
                     // A previously discovered endpoint has gone away.
                 }
             };
-
-
 }

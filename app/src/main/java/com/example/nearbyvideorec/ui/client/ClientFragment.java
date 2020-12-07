@@ -147,6 +147,8 @@ public class ClientFragment extends Fragment {
         });
         camera.setMode(Mode.VIDEO);
 
+        ((MainActivity) requireActivity()).setCamera(camera);
+
         savedUIData = SavedUIData.INSTANCE;
 
         // Switch click listener.
