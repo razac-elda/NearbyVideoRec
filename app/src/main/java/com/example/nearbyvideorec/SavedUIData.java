@@ -1,7 +1,5 @@
 package com.example.nearbyvideorec;
 
-import android.widget.TextView;
-
 // Singleton-enum pattern is the suggested implementation of a Singleton nowadays.
 public enum SavedUIData {
     INSTANCE;

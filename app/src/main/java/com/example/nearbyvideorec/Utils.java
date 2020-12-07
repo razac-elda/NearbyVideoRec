@@ -17,7 +17,6 @@ import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Random;
 
 public final class Utils {
 
