@@ -92,6 +92,7 @@ public class ClientFragment extends Fragment {
         public void onClick(View v) {
             try {
                 FileDescriptor videoFileDescriptor = Utils.createFile(requireContext());
+                camera.open();
                 camera.setVisibility(View.VISIBLE);
                 camera.takeVideo(videoFileDescriptor);
                 Toast.makeText(requireContext(), "REC", Toast.LENGTH_SHORT).show();
@@ -112,6 +113,7 @@ public class ClientFragment extends Fragment {
         public void onClick(View v) {
             camera.stopVideo();
             camera.setVisibility(View.INVISIBLE);
+            camera.close();
             Toast.makeText(requireContext(), "STOP", Toast.LENGTH_SHORT).show();
         }
     };
@@ -129,7 +131,6 @@ public class ClientFragment extends Fragment {
         if (Utils.checkCameraAPI(requireContext())) {
             camera.setExperimental(false);
             camera.setEngine(Engine.CAMERA1);
-            Toast.makeText(requireContext(), "OLD", Toast.LENGTH_LONG).show();
         }
 
         camera.setLifecycleOwner(getViewLifecycleOwner());
@@ -146,7 +147,7 @@ public class ClientFragment extends Fragment {
             }
         });
         camera.setMode(Mode.VIDEO);
-
+        camera.close();
         ((MainActivity) requireActivity()).setCamera(camera);
 
         savedUIData = SavedUIData.INSTANCE;

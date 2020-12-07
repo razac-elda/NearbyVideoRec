@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void setCamera(CameraView camera){
+    public void setCamera(CameraView camera) {
         this.camera = camera;
     }
 
@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
                         .show();
                 savedUIData.setClient_status_switch(false);
             }
-            camera.close();
+
             navController.navigate(R.id.navigation_client);
 
         } else {
@@ -143,7 +143,6 @@ public class MainActivity extends AppCompatActivity {
 
             Nearby.getConnectionsClient(context).stopDiscovery();
             savedUIData.setClient_status_switch(false);
-            camera.close();
             navController.navigate(R.id.navigation_client);
         } else {
 
@@ -218,12 +217,11 @@ public class MainActivity extends AppCompatActivity {
                             // Save new connected endpoint
                             connectedEndpoints.put(endpointId, temp_connectionInfo);
                             // Refresh fragment
-                            if (deviceRole.equals("Client")) {
-                                camera.close();
+                            if (deviceRole.equals("Client"))
                                 navController.navigate(R.id.navigation_client);
-                            } else {
+                            else
                                 navController.navigate(R.id.navigation_server);
-                            }
+
                             Toast.makeText(activity_context, getString(R.string.connected_to) +
                                     " " + temp_connectionInfo.getEndpointName(), Toast.LENGTH_LONG).show();
                             break;
@@ -258,12 +256,10 @@ public class MainActivity extends AppCompatActivity {
                         // Remove old endpoint
                         connectedEndpoints.remove(endpointId);
                         // Refresh fragments
-                        if (deviceRole.equals("Client")) {
-                            camera.close();
+                        if (deviceRole.equals("Client"))
                             navController.navigate(R.id.navigation_client);
-                        } else {
+                        else
                             navController.navigate(R.id.navigation_server);
-                        }
                     }
                 }
 
@@ -302,7 +298,6 @@ public class MainActivity extends AppCompatActivity {
                         Nearby.getConnectionsClient(context).stopAdvertising();
                         savedUIData.setClient_status_switch(true);
                         savedUIData.setServer_status_switch(false);
-                        camera.close();
                         navController.navigate(R.id.navigation_client);
                         break;
 
@@ -362,4 +357,5 @@ public class MainActivity extends AppCompatActivity {
                     // A previously discovered endpoint has gone away.
                 }
             };
+
 }
