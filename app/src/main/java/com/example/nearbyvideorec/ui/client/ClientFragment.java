@@ -30,11 +30,13 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.nearbyvideorec.MainActivity;
 import com.example.nearbyvideorec.R;
 import com.example.nearbyvideorec.SavedUIData;
+import com.example.nearbyvideorec.Utils;
 import com.google.android.gms.nearby.connection.ConnectionInfo;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.otaliastudios.cameraview.CameraListener;
 import com.otaliastudios.cameraview.CameraView;
 import com.otaliastudios.cameraview.VideoResult;
+import com.otaliastudios.cameraview.controls.Engine;
 import com.otaliastudios.cameraview.controls.Mode;
 
 import java.io.File;
@@ -95,42 +97,13 @@ public class ClientFragment extends Fragment {
     private final View.OnClickListener rec_button_onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            File createdVideo = null;
-            resolver = requireContext().getContentResolver();
-            String videoFileName = "video_" + getTimeStampString() + ".mp4";
-            ContentValues valuesVideos = new ContentValues();
-            if (Build.VERSION.SDK_INT >= 29) {
-                Uri collection = MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
-                valuesVideos.put(MediaStore.Video.Media.TITLE, videoFileName);
-                valuesVideos.put(MediaStore.Video.Media.DISPLAY_NAME, videoFileName);
-                valuesVideos.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
-                valuesVideos.put(MediaStore.Video.Media.DATE_ADDED, System.currentTimeMillis() / 1000);
-                valuesVideos.put(MediaStore.Video.Media.DATE_TAKEN, System.currentTimeMillis());
-                valuesVideos.put(MediaStore.Video.Media.IS_PENDING, 1);
-                uriSavedVideo = resolver.insert(collection, valuesVideos);
-            } else {
-                String directory = Environment.getExternalStorageDirectory().getAbsolutePath() +
-                        File.separator + Environment.DIRECTORY_MOVIES;
-
-                createdVideo = new File(directory, videoFileName);
-
-                valuesVideos.put(MediaStore.Video.Media.TITLE, videoFileName);
-                valuesVideos.put(MediaStore.Video.Media.DISPLAY_NAME, videoFileName);
-                valuesVideos.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
-                valuesVideos.put(MediaStore.Video.Media.DATE_ADDED, System.currentTimeMillis() / 1000);
-
-                valuesVideos.put(MediaStore.Video.Media.DATA, createdVideo.getAbsolutePath());
-                uriSavedVideo = resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, valuesVideos);
-            }
-
             try {
-                FileDescriptor videoFileDescriptor = resolver.openFileDescriptor(uriSavedVideo, "w", null)
-                        .getFileDescriptor();
+                FileDescriptor videoFileDescriptor = Utils.createFile(requireContext());
                 camera.setVisibility(View.VISIBLE);
                 camera.takeVideo(videoFileDescriptor);
-                Toast.makeText(requireContext(), "REC", Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), "REC", Toast.LENGTH_SHORT).show();
             } catch (FileNotFoundException e) {
-                Toast.makeText(requireContext(), "ERROR", Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), "ERROR", Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
             }
 
@@ -146,7 +119,7 @@ public class ClientFragment extends Fragment {
         public void onClick(View v) {
             camera.stopVideo();
             camera.setVisibility(View.INVISIBLE);
-            Toast.makeText(requireContext(), "STOP", Toast.LENGTH_LONG).show();
+            Toast.makeText(requireContext(), "STOP", Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -159,11 +132,10 @@ public class ClientFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_client, container, false);
 
         camera = root.findViewById(R.id.camera);
-        // If camera is legacy we switch camera xml component
-        if (((MainActivity) requireActivity()).getLegacy()) {
-            camera.setVisibility(View.GONE);
-            camera = root.findViewById(R.id.camera_legacy);
-            camera.setVisibility(View.INVISIBLE);
+
+        if (Utils.checkCameraAPI(requireContext())) {
+            camera.setExperimental(false);
+            camera.setEngine(Engine.CAMERA1);
             Toast.makeText(requireContext(), "OLD", Toast.LENGTH_LONG).show();
         }
 
@@ -172,6 +144,8 @@ public class ClientFragment extends Fragment {
             @Override
             public void onVideoTaken(@NonNull VideoResult result) {
                 if (Build.VERSION.SDK_INT >= 29) {
+                    uriSavedVideo = Utils.getUriSavedVideo();
+                    resolver = Utils.getResolver();
                     ContentValues fileDetails = new ContentValues();
                     fileDetails.put(MediaStore.Video.Media.IS_PENDING, 0);
                     resolver.update(uriSavedVideo, fileDetails, null, null);

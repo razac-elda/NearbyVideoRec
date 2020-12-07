@@ -29,7 +29,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
+import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
@@ -68,27 +70,6 @@ public class MainActivity extends AppCompatActivity {
         connectedEndpoints = new HashMap<>();
 
         setContentView(R.layout.activity_main);
-
-        // Check camera API level
-        CameraManager manager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
-        legacy = false;
-        try {
-            // Cycle through all cameras
-            for (String cameraId : manager.getCameraIdList()) {
-
-                CameraCharacteristics characteristics
-                        = manager.getCameraCharacteristics(cameraId);
-
-                // If back camera API support is LEGACY we mark it as "legacy" to avoid using Camera2 API
-                if (characteristics.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK) {
-                    if (characteristics.get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL) ==
-                            CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY)
-                        legacy = true;
-                }
-            }
-        } catch (CameraAccessException e) {
-            e.printStackTrace();
-        }
 
         // Singleton created for the first and only time.
         savedUIData = SavedUIData.INSTANCE;
@@ -129,7 +110,9 @@ public class MainActivity extends AppCompatActivity {
                         .show();
                 savedUIData.setClient_status_switch(false);
             }
-            navController.navigate(R.id.navigation_client);
+
+            navController.navigate(R.id.navigation_client, null, new NavOptions.Builder()
+                    .setPopUpTo(R.id.navigation_client, true).build());
 
         } else {
 
