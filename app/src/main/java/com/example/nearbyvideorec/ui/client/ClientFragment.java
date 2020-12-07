@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.pm.PackageManager;
-import android.icu.text.SimpleDateFormat;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -35,7 +34,6 @@ import com.otaliastudios.cameraview.controls.Mode;
 
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
-import java.util.Date;
 import java.util.HashMap;
 
 public class ClientFragment extends Fragment {
@@ -80,11 +78,6 @@ public class ClientFragment extends Fragment {
             }
         }
     };
-
-    private String getTimeStampString() {
-        Date data_time = new Date();
-        return new SimpleDateFormat("yyyyMMdd_hhmm").format(data_time);
-    }
 
     // Test button to be removed, temporary holder for starting video recording
     private final View.OnClickListener rec_button_onClickListener = new View.OnClickListener() {
