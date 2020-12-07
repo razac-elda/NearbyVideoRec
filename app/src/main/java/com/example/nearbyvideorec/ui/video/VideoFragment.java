@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -46,6 +47,8 @@ public class VideoFragment extends Fragment {
     private FileOutputStream fos;
     private String fileNameTxt = "myListpatth.txt";
 
+    private Button btn_merge;
+
 
     private String getNameOutputFilemp4() {
 
@@ -62,14 +65,25 @@ public class VideoFragment extends Fragment {
                              ViewGroup container, Bundle savedInstanceState) {
         videoViewModel = new ViewModelProvider(this).get(VideoViewModel.class);
         View root = inflater.inflate(R.layout.fragment_video, container, false);
-        savedUIData = SavedUIData.INSTANCE;
 
-        //COMMAND FOR ANDROID < 10(Q)
-        runCommand("-f concat -safe 0 -i",
-                getDirectoryNameMoviesPathString() + fileNameTxt,
-                "-c copy",
-                getDirectoryNameMoviesPathString() + nameOutputFilemp4
-        );
+
+        savedUIData = SavedUIData.INSTANCE;
+        btn_merge = (Button) root.findViewById(R.id.btn_merge);
+
+        // aggiunta bottone più listener
+        btn_merge.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //COMMAND FOR ANDROID < 10(Q)
+                runCommand("-f concat -safe 0 -i",
+                        getDirectoryNameMoviesPathString() + fileNameTxt,
+                        "-c copy",
+                        getDirectoryNameMoviesPathString() + nameOutputFilemp4
+                );
+
+            }
+        });
+
         return root;
     }
 
