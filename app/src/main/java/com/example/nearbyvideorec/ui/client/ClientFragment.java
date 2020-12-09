@@ -11,7 +11,6 @@ import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,8 +31,6 @@ import com.otaliastudios.cameraview.VideoResult;
 import com.otaliastudios.cameraview.controls.Engine;
 import com.otaliastudios.cameraview.controls.Mode;
 
-import java.io.FileDescriptor;
-import java.io.FileNotFoundException;
 import java.util.HashMap;
 
 public class ClientFragment extends Fragment {
@@ -52,8 +49,6 @@ public class ClientFragment extends Fragment {
     private SavedUIData savedUIData;
 
     private SwitchMaterial status_switch;
-    private Button rec_button;
-    private Button stop_button;
     private TextView connection_status;
 
     private CameraView camera;
@@ -76,38 +71,6 @@ public class ClientFragment extends Fragment {
                 // Missing permissions, ask user to accept
                 requestPermissions(REQUIRED_PERMISSIONS, REQUEST_PERMISSIONS_CODE);
             }
-        }
-    };
-
-    // Test button to be removed, temporary holder for starting video recording
-    private final View.OnClickListener rec_button_onClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            try {
-                FileDescriptor videoFileDescriptor = Utils.createFile(requireContext());
-                camera.open();
-                camera.setVisibility(View.VISIBLE);
-                camera.takeVideo(videoFileDescriptor);
-                Toast.makeText(requireContext(), "REC", Toast.LENGTH_SHORT).show();
-            } catch (FileNotFoundException e) {
-                Toast.makeText(requireContext(), "ERROR", Toast.LENGTH_SHORT).show();
-                e.printStackTrace();
-            }
-
-
-            /*for (String key : connectedDevices.keySet())
-                ((MainActivity) requireActivity()).sendMessage(key, "Ciao mamma");*/
-        }
-    };
-
-    // Test button to be removed
-    private final View.OnClickListener stop_button_onClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            camera.stopVideo();
-            camera.setVisibility(View.INVISIBLE);
-            camera.close();
-            Toast.makeText(requireContext(), "STOP", Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -148,14 +111,6 @@ public class ClientFragment extends Fragment {
         // Switch click listener.
         status_switch = (SwitchMaterial) root.findViewById(R.id.client_status_switch);
         status_switch.setOnClickListener(switch_onClickListener);
-
-        // Button click listener.
-        rec_button = (Button) root.findViewById(R.id.rec_button);
-        rec_button.setOnClickListener(rec_button_onClickListener);
-
-        // Button click listener.
-        stop_button = (Button) root.findViewById(R.id.stop_button);
-        stop_button.setOnClickListener(stop_button_onClickListener);
 
         // Restore status from SavedUIData.
         status_switch.setChecked(savedUIData.getClient_status_switch());

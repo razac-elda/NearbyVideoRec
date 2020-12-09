@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -32,6 +33,8 @@ import com.otaliastudios.cameraview.CameraView;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
@@ -127,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
                  * disconnecting. Maybe send new Server endpointId and connect with requestConnection
                  * Unknown:Connection needs to authenticate again?
                  */
-                sendMessage(endpointId, "Change");
+                sendMessage(endpointId, "change_server");
                 startAdvertising();
                 Nearby.getConnectionsClient(context).stopDiscovery();
                 savedUIData.setClient_status_switch(false);
@@ -286,7 +289,7 @@ public class MainActivity extends AppCompatActivity {
                 String msg = new String(payload.asBytes(), StandardCharsets.UTF_8);
                 switch (msg) {
 
-                    case "Change":
+                    case "change_server":
                         // Request to change Server
                         /*
                          * TODO:Only working with two devices, need to update for multi device.
@@ -299,6 +302,27 @@ public class MainActivity extends AppCompatActivity {
                         savedUIData.setClient_status_switch(true);
                         savedUIData.setServer_status_switch(false);
                         navController.navigate(R.id.navigation_client);
+                        break;
+
+                    case "start_rec":
+
+                        FileDescriptor videoFileDescriptor = null;
+                        try {
+                            videoFileDescriptor = Utils.createFile(context);
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                        camera.open();
+                        camera.setVisibility(View.VISIBLE);
+                        if (videoFileDescriptor != null)
+                            camera.takeVideo(videoFileDescriptor);
+                        break;
+
+                    case "stop_rec":
+
+                        camera.stopVideo();
+                        camera.setVisibility(View.INVISIBLE);
+                        camera.close();
                         break;
 
                     default:
