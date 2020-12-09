@@ -107,9 +107,15 @@ public class ServerFragment extends Fragment {
     private final View.OnClickListener start_onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Toast toast;
-            toast = Toast.makeText(requireContext(), "SENT", Toast.LENGTH_SHORT);
-            toast.show();
+            String device = selected_device.getText().toString();
+            if (!device.equals("No device selected")) {
+                for (String key : connectedDevices.keySet()) {
+                    if (connectedDevices.get(key).getEndpointName().equals(device))
+                        ((MainActivity) requireActivity()).sendMessage(key, "start_rec");
+                }
+            } else {
+                Toast.makeText(requireContext(), "Select a device", Toast.LENGTH_SHORT).show();
+            }
         }
     };
 
@@ -117,9 +123,15 @@ public class ServerFragment extends Fragment {
     private final View.OnClickListener stop_onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Toast toast;
-            toast = Toast.makeText(requireContext(), "SENT", Toast.LENGTH_SHORT);
-            toast.show();
+            String device = selected_device.getText().toString();
+            if (!device.equals("No device selected")) {
+                for (String key : connectedDevices.keySet()) {
+                    if (connectedDevices.get(key).getEndpointName().equals(device))
+                        ((MainActivity) requireActivity()).sendMessage(key, "stop_rec");
+                }
+            } else {
+                Toast.makeText(requireContext(), "Select a device", Toast.LENGTH_SHORT).show();
+            }
         }
     };
 
