@@ -1,7 +1,5 @@
 package com.example.nearbyvideorec;
 
-import android.widget.TextView;
-
 // Singleton-enum pattern is the suggested implementation of a Singleton nowadays.
 public enum SavedUIData {
     INSTANCE;
@@ -9,13 +7,13 @@ public enum SavedUIData {
     // Declare elements that need to be monitored.
     private Boolean client_status_switch;
     private Boolean server_status_switch;
-    private String client_connection_status;
+    private Boolean recording;
 
     // Initial status for each element when fragment is created for the first time.
     SavedUIData() {
         client_status_switch = false;
         server_status_switch = false;
-        client_connection_status = "Not connected";
+        recording = false;
     }
 
     // Getter and Setters for all the elements.
@@ -36,12 +34,12 @@ public enum SavedUIData {
         this.server_status_switch = server_status_switch;
     }
 
-    public String getClient_connection_status() {
-        return client_connection_status;
+    public Boolean getRecording() {
+        return recording;
     }
 
-    public void setClient_connection_status(String client_connection_status) {
-        this.client_connection_status = client_connection_status;
+    public void setRecording(Boolean recording) {
+        this.recording = recording;
     }
 
 }

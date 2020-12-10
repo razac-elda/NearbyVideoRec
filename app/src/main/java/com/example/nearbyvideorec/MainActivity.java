@@ -1,15 +1,24 @@
 package com.example.nearbyvideorec;
 
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CameraCharacteristics;
-import android.hardware.camera2.CameraManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.view.View;
 import android.widget.Toast;
 
-import com.example.nearbyvideorec.ui.server.ServerFragment;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
+
 import com.google.android.gms.nearby.Nearby;
 import com.google.android.gms.nearby.connection.AdvertisingOptions;
 import com.google.android.gms.nearby.connection.ConnectionInfo;
@@ -24,20 +33,18 @@ import com.google.android.gms.nearby.connection.PayloadCallback;
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate;
 import com.google.android.gms.nearby.connection.Strategy;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
+import com.otaliastudios.cameraview.CameraListener;
+import com.otaliastudios.cameraview.CameraView;
+import com.otaliastudios.cameraview.VideoResult;
+import com.otaliastudios.cameraview.controls.Engine;
+import com.otaliastudios.cameraview.controls.Mode;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -55,8 +62,11 @@ public class MainActivity extends AppCompatActivity {
     private Context context;
     private Context activity_context;
     private String SERVICE_ID;
-    private Boolean legacy;
     private HashMap<String, ConnectionInfo> connectedEndpoints;
+
+    private CameraView camera;
+    private ContentResolver resolver;
+    private Uri uriSavedVideo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,27 +78,6 @@ public class MainActivity extends AppCompatActivity {
         connectedEndpoints = new HashMap<>();
 
         setContentView(R.layout.activity_main);
-
-        // Check camera API level
-        CameraManager manager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
-        legacy = false;
-        try {
-            // Cycle through all cameras
-            for (String cameraId : manager.getCameraIdList()) {
-
-                CameraCharacteristics characteristics
-                        = manager.getCameraCharacteristics(cameraId);
-
-                // If back camera API support is LEGACY we mark it as "legacy" to avoid using Camera2 API
-                if (characteristics.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK) {
-                    if (characteristics.get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL) ==
-                            CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY)
-                        legacy = true;
-                }
-            }
-        } catch (CameraAccessException e) {
-            e.printStackTrace();
-        }
 
         // Singleton created for the first and only time.
         savedUIData = SavedUIData.INSTANCE;
@@ -102,10 +91,29 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
 
-    }
+        camera = findViewById(R.id.camera);
 
-    public Boolean getLegacy() {
-        return legacy;
+        if (Utils.checkCameraAPI(context)) {
+            camera.setExperimental(false);
+            camera.setEngine(Engine.CAMERA1);
+        }
+
+        camera.setLifecycleOwner(this);
+        camera.addCameraListener(new CameraListener() {
+            @Override
+            public void onVideoTaken(@NonNull VideoResult result) {
+                if (Build.VERSION.SDK_INT >= 29) {
+                    uriSavedVideo = Utils.getUriSavedVideo();
+                    resolver = Utils.getResolver();
+                    ContentValues fileDetails = new ContentValues();
+                    fileDetails.put(MediaStore.Video.Media.IS_PENDING, 0);
+                    resolver.update(uriSavedVideo, fileDetails, null, null);
+                }
+            }
+        });
+        camera.setMode(Mode.VIDEO);
+        camera.close();
+
     }
 
     public HashMap<String, ConnectionInfo> getConnectedEndpoints() {
@@ -119,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
             if (!savedUIData.getServer_status_switch()) {
                 deviceRole = "Client";
                 startDiscovery();
+                savedUIData.setClient_status_switch(true);
             } else {
 
                 new AlertDialog.Builder(activity_context, R.style.Theme_ConnectionDialog)
@@ -129,15 +138,13 @@ public class MainActivity extends AppCompatActivity {
                         .show();
                 savedUIData.setClient_status_switch(false);
             }
+
             navController.navigate(R.id.navigation_client);
 
         } else {
 
             // Caller is SERVER
-            if (!savedUIData.getClient_status_switch()) {
-                deviceRole = "Server";
-                startAdvertising();
-            } else {
+            if (savedUIData.getClient_status_switch()) {
                 // Caller is client and want to become a Server
                 String endpointId = null;
 
@@ -146,18 +153,19 @@ public class MainActivity extends AppCompatActivity {
                     endpointId = endpoint;
 
                 /*
-                 * TODO:Only working with two devices, need to update for multi device.
+                 * TODO:Need to confirm new connection, not seamless
                  * Idea:Send to other devices a request to switch off-on discovery without
                  * disconnecting. Maybe send new Server endpointId and connect with requestConnection
                  * Unknown:Connection needs to authenticate again?
                  */
-                sendMessage(endpointId, "Change");
+                sendMessage(endpointId, "swap_client_server");
+
+            } else {
                 startAdvertising();
-                Nearby.getConnectionsClient(context).stopDiscovery();
-                savedUIData.setClient_status_switch(false);
                 savedUIData.setServer_status_switch(true);
+                deviceRole = "Server";
+                navController.navigate(R.id.navigation_server);
             }
-            navController.navigate(R.id.navigation_server);
         }
     }
 
@@ -208,10 +216,13 @@ public class MainActivity extends AppCompatActivity {
     private final ConnectionLifecycleCallback connectionLifecycleCallback =
             new ConnectionLifecycleCallback() {
                 ConnectionInfo temp_connectionInfo;
+                String temp_endpointId;
 
                 @Override
                 public void onConnectionInitiated(@NotNull String endpointId, ConnectionInfo connectionInfo) {
                     temp_connectionInfo = connectionInfo;
+                    temp_endpointId = endpointId;
+
                     new AlertDialog.Builder(activity_context, R.style.Theme_ConnectionDialog)
                             .setTitle(getString(R.string.accept_connection_to) + " " + connectionInfo.getEndpointName() + "?")
                             .setMessage(getString(R.string.confirm_device_code) + " " + connectionInfo.getAuthenticationToken())
@@ -239,7 +250,8 @@ public class MainActivity extends AppCompatActivity {
                         case ConnectionsStatusCodes.STATUS_OK:
                             // We're connected! Can now start sending and receiving data.
                             // Save new connected endpoint
-                            connectedEndpoints.put(endpointId, temp_connectionInfo);
+                            connectedEndpoints.put(temp_endpointId, temp_connectionInfo);
+
                             // Refresh fragment
                             if (deviceRole.equals("Client"))
                                 navController.navigate(R.id.navigation_client);
@@ -248,6 +260,7 @@ public class MainActivity extends AppCompatActivity {
 
                             Toast.makeText(activity_context, getString(R.string.connected_to) +
                                     " " + temp_connectionInfo.getEndpointName(), Toast.LENGTH_LONG).show();
+
                             break;
 
                         case ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED:
@@ -265,6 +278,9 @@ public class MainActivity extends AppCompatActivity {
                         default:
                             // Unknown status code
                     }
+
+                    temp_connectionInfo = null;
+                    temp_endpointId = null;
                 }
 
                 @Override
@@ -310,7 +326,7 @@ public class MainActivity extends AppCompatActivity {
                 String msg = new String(payload.asBytes(), StandardCharsets.UTF_8);
                 switch (msg) {
 
-                    case "Change":
+                    case "swap_client_server":
                         // Request to change Server
                         /*
                          * TODO:Only working with two devices, need to update for multi device.
@@ -318,11 +334,59 @@ public class MainActivity extends AppCompatActivity {
                          * disconnecting. Maybe send new Server endpointId and connect with requestConnection
                          * Unknown:Connection needs to authenticate again?
                          */
-                        startDiscovery();
-                        Nearby.getConnectionsClient(context).stopAdvertising();
-                        savedUIData.setClient_status_switch(true);
+                        if (!savedUIData.getRecording()) {
+                            sendMessage(endpointId, "allow_swap");
+                            for (String endpoint : connectedEndpoints.keySet()) {
+                                if (!endpoint.equals(endpointId)) {
+                                    sendMessage(endpoint, "change_server");
+                                }
+                            }
+
+                            savedUIData.setClient_status_switch(true);
+                            savedUIData.setServer_status_switch(false);
+
+                            requestDisconnect("SERVER");
+                            requestConnect("CLIENT");
+                        } else {
+                            sendMessage(endpointId, "deny_swap");
+                        }
+                        break;
+
+                    case "allow_swap":
+                        requestDisconnect("CLIENT");
+                        savedUIData.setClient_status_switch(false);
+                        requestConnect("SERVER");
+                        break;
+
+                    case "deny_swap":
                         savedUIData.setServer_status_switch(false);
-                        navController.navigate(R.id.navigation_client);
+                        Toast.makeText(activity_context, getString(R.string.recording_ongoing), Toast.LENGTH_LONG).show();
+                        break;
+
+                    case "change_server":
+                        requestDisconnect("CLIENT");
+                        requestConnect("CLIENT");
+                        break;
+
+                    case "start_rec":
+
+                        FileDescriptor videoFileDescriptor = null;
+                        try {
+                            videoFileDescriptor = Utils.createFile(context);
+                        } catch (FileNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                        camera.open();
+                        camera.setVisibility(View.VISIBLE);
+                        if (videoFileDescriptor != null)
+                            camera.takeVideo(videoFileDescriptor);
+                        break;
+
+                    case "stop_rec":
+
+                        camera.stopVideo();
+                        camera.setVisibility(View.INVISIBLE);
+                        camera.close();
                         break;
 
                     default:
@@ -381,6 +445,5 @@ public class MainActivity extends AppCompatActivity {
                     // A previously discovered endpoint has gone away.
                 }
             };
-
 
 }
