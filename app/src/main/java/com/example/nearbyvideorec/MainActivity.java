@@ -1,9 +1,13 @@
 package com.example.nearbyvideorec;
 
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Toast;
 
@@ -29,7 +33,11 @@ import com.google.android.gms.nearby.connection.PayloadCallback;
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate;
 import com.google.android.gms.nearby.connection.Strategy;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.otaliastudios.cameraview.CameraListener;
 import com.otaliastudios.cameraview.CameraView;
+import com.otaliastudios.cameraview.VideoResult;
+import com.otaliastudios.cameraview.controls.Engine;
+import com.otaliastudios.cameraview.controls.Mode;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -55,7 +63,10 @@ public class MainActivity extends AppCompatActivity {
     private Context activity_context;
     private String SERVICE_ID;
     private HashMap<String, ConnectionInfo> connectedEndpoints;
+
     private CameraView camera;
+    private ContentResolver resolver;
+    private Uri uriSavedVideo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,10 +91,29 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
 
-    }
+        camera = findViewById(R.id.camera);
 
-    public void setCamera(CameraView camera) {
-        this.camera = camera;
+        if (Utils.checkCameraAPI(context)) {
+            camera.setExperimental(false);
+            camera.setEngine(Engine.CAMERA1);
+        }
+
+        camera.setLifecycleOwner(this);
+        camera.addCameraListener(new CameraListener() {
+            @Override
+            public void onVideoTaken(@NonNull VideoResult result) {
+                if (Build.VERSION.SDK_INT >= 29) {
+                    uriSavedVideo = Utils.getUriSavedVideo();
+                    resolver = Utils.getResolver();
+                    ContentValues fileDetails = new ContentValues();
+                    fileDetails.put(MediaStore.Video.Media.IS_PENDING, 0);
+                    resolver.update(uriSavedVideo, fileDetails, null, null);
+                }
+            }
+        });
+        camera.setMode(Mode.VIDEO);
+        camera.close();
+
     }
 
     public HashMap<String, ConnectionInfo> getConnectedEndpoints() {

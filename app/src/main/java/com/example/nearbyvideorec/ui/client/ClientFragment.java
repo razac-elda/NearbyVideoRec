@@ -1,13 +1,8 @@
 package com.example.nearbyvideorec.ui.client;
 
 import android.annotation.SuppressLint;
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.pm.PackageManager;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,14 +17,8 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.nearbyvideorec.MainActivity;
 import com.example.nearbyvideorec.R;
 import com.example.nearbyvideorec.SavedUIData;
-import com.example.nearbyvideorec.Utils;
 import com.google.android.gms.nearby.connection.ConnectionInfo;
 import com.google.android.material.switchmaterial.SwitchMaterial;
-import com.otaliastudios.cameraview.CameraListener;
-import com.otaliastudios.cameraview.CameraView;
-import com.otaliastudios.cameraview.VideoResult;
-import com.otaliastudios.cameraview.controls.Engine;
-import com.otaliastudios.cameraview.controls.Mode;
 
 import java.util.HashMap;
 
@@ -50,10 +39,6 @@ public class ClientFragment extends Fragment {
 
     private SwitchMaterial status_switch;
     private TextView connection_status;
-
-    private CameraView camera;
-    private ContentResolver resolver;
-    private Uri uriSavedVideo;
 
     private HashMap<String, ConnectionInfo> connectedDevices;
 
@@ -82,30 +67,6 @@ public class ClientFragment extends Fragment {
 
         View root = inflater.inflate(R.layout.fragment_client, container, false);
 
-        camera = root.findViewById(R.id.camera);
-
-        if (Utils.checkCameraAPI(requireContext())) {
-            camera.setExperimental(false);
-            camera.setEngine(Engine.CAMERA1);
-        }
-
-        camera.setLifecycleOwner(getViewLifecycleOwner());
-        camera.addCameraListener(new CameraListener() {
-            @Override
-            public void onVideoTaken(@NonNull VideoResult result) {
-                if (Build.VERSION.SDK_INT >= 29) {
-                    uriSavedVideo = Utils.getUriSavedVideo();
-                    resolver = Utils.getResolver();
-                    ContentValues fileDetails = new ContentValues();
-                    fileDetails.put(MediaStore.Video.Media.IS_PENDING, 0);
-                    resolver.update(uriSavedVideo, fileDetails, null, null);
-                }
-            }
-        });
-        camera.setMode(Mode.VIDEO);
-        camera.close();
-        ((MainActivity) requireActivity()).setCamera(camera);
-
         savedUIData = SavedUIData.INSTANCE;
 
         // Switch click listener.
@@ -114,7 +75,6 @@ public class ClientFragment extends Fragment {
 
         // Restore status from SavedUIData.
         status_switch.setChecked(savedUIData.getClient_status_switch());
-
 
         connection_status = (TextView) root.findViewById(R.id.client_status);
         connection_status.setTextColor(ContextCompat.getColor(requireContext(), R.color.red));
