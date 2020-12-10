@@ -29,4 +29,5 @@
     <string name="connection_error">Connection error!</string>
     <string name="permissions_denied">Permissions denied</string>
     <string name="no_device_selected">No device selected</string>
+    <string name="recording_ongoing">Cannot become server during recording</string>
 </resources>
