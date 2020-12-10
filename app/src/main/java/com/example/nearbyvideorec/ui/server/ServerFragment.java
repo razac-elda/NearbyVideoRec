@@ -81,13 +81,16 @@ public class ServerFragment extends Fragment {
             */
 
             connectedDevices = ((MainActivity) requireActivity()).getConnectedEndpoints();
-            for (ConnectionInfo info : connectedDevices.values())
+            for (ConnectionInfo info : connectedDevices.values()){
                 deviceName.add(info.getEndpointName());
+                Log.d("Info", info.getEndpointName());
+            }
+
 
             String[]  deviceNameArray = deviceName.toArray(new String[0]);
             // TODO:Debug muli-device list
             for (String i : deviceNameArray)
-                Log.d("A", i);
+                Log.d("Nomi", i);
             AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
             builder.setTitle(R.string.server_select_a_device);
             builder.setItems(deviceNameArray, new DialogInterface.OnClickListener() {
@@ -110,8 +113,12 @@ public class ServerFragment extends Fragment {
             String device = selected_device.getText().toString();
             if (!device.equals("No device selected")) {
                 for (String key : connectedDevices.keySet()) {
-                    if (connectedDevices.get(key).getEndpointName().equals(device))
+                    if (connectedDevices.get(key).getEndpointName().equals(device)) {
                         ((MainActivity) requireActivity()).sendMessage(key, "start_rec");
+                        start_button.setEnabled(false);
+                        stop_button.setEnabled(true);
+                        savedUIData.setRecording(true);
+                    }
                 }
             } else {
                 Toast.makeText(requireContext(), "Select a device", Toast.LENGTH_SHORT).show();
@@ -126,8 +133,12 @@ public class ServerFragment extends Fragment {
             String device = selected_device.getText().toString();
             if (!device.equals("No device selected")) {
                 for (String key : connectedDevices.keySet()) {
-                    if (connectedDevices.get(key).getEndpointName().equals(device))
+                    if (connectedDevices.get(key).getEndpointName().equals(device)) {
                         ((MainActivity) requireActivity()).sendMessage(key, "stop_rec");
+                        start_button.setEnabled(true);
+                        stop_button.setEnabled(false);
+                        savedUIData.setRecording(false);
+                    }
                 }
             } else {
                 Toast.makeText(requireContext(), "Select a device", Toast.LENGTH_SHORT).show();
@@ -166,8 +177,11 @@ public class ServerFragment extends Fragment {
 
         // Restore status from SavedUIData(switch dependant).
         select_button.setEnabled(savedUIData.getServer_status_switch());
-        start_button.setEnabled(savedUIData.getServer_status_switch());
-        stop_button.setEnabled(savedUIData.getServer_status_switch());
+
+        if (savedUIData.getServer_status_switch()) {
+            start_button.setEnabled(!savedUIData.getRecording());
+            stop_button.setEnabled(savedUIData.getRecording());
+        }
 
         return root;
     }
@@ -178,8 +192,6 @@ public class ServerFragment extends Fragment {
         // Store status in SavedUIData.
         savedUIData.setServer_status_switch(status);
         select_button.setEnabled(status);
-        start_button.setEnabled(status);
-        stop_button.setEnabled(status);
 
         // Switch on->start server, switch off->disconnect
         if (status) {
