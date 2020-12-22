@@ -1,11 +1,14 @@
 package com.example.nearbyvideorec.ui.video;
 
+
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
+
 import android.net.Uri;
+
 import android.os.Bundle;
 import android.os.Environment;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,7 +20,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-
 
 
 import com.example.nearbyvideorec.R;
@@ -36,7 +38,7 @@ import java.util.Locale;
 import com.arthenica.mobileffmpeg.Config;
 import com.arthenica.mobileffmpeg.FFmpeg;
 
-import static android.app.Activity.RESULT_CANCELED;
+
 import static android.app.Activity.RESULT_OK;
 import static com.arthenica.mobileffmpeg.Config.RETURN_CODE_CANCEL;
 import static com.arthenica.mobileffmpeg.Config.RETURN_CODE_SUCCESS;
@@ -48,7 +50,7 @@ public class VideoFragment extends Fragment {
     private SavedUIData savedUIData;
 
     private Context myc;
-    private String command;
+
     private String space = " ";
     private String apostrofo = "\'";
 
@@ -61,13 +63,13 @@ public class VideoFragment extends Fragment {
     private Button btn_intent_files;
 
     private Uri folderUri;
-    protected ArrayList<String> paths_list = new ArrayList<String>();
+    private ArrayList<String> paths_list = new ArrayList<String>();
 
 
     private static final int REQUEST_CODE_BY_INTENT_FILE_CHOOSER = 1234;
 
-    private String generateNameOutputFile(){
-        return "Merged_video_"+ getTimeStampString() + ".mp4" ;
+    private String generateNameOutputFile() {
+        return "Merged_" + getTimeStampString() + ".mp4";
     }
 
     private String getDirectoryNameMoviesPathString() {
@@ -114,38 +116,38 @@ public class VideoFragment extends Fragment {
 
 
     //aprire intent file chooser
-    public void openMyFolder(){
+    public void openMyFolder() {
         Intent chooserfile = new Intent(Intent.ACTION_GET_CONTENT);
 
         folderUri = Uri.parse(Environment.getExternalStorageDirectory().getAbsolutePath()
-                +  File.separator + Environment.DIRECTORY_MOVIES + File.separator);
-        chooserfile.setDataAndType(folderUri,"video/mp4");
+                + File.separator + Environment.DIRECTORY_MOVIES + File.separator);
+        chooserfile.setDataAndType(folderUri, "video/mp4");
 
         chooserfile.addCategory(Intent.CATEGORY_OPENABLE);
-        chooserfile  = Intent.createChooser(chooserfile, "Open folder");
-        startActivityForResult(chooserfile,REQUEST_CODE_BY_INTENT_FILE_CHOOSER);
+        chooserfile = Intent.createChooser(chooserfile, "Open folder");
+        startActivityForResult(chooserfile, REQUEST_CODE_BY_INTENT_FILE_CHOOSER);
 
     }
 
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode,resultCode,data);
+        super.onActivityResult(requestCode, resultCode, data);
 
 
-        if ( requestCode == REQUEST_CODE_BY_INTENT_FILE_CHOOSER && resultCode == -1 && data!= null){
+        if (requestCode == REQUEST_CODE_BY_INTENT_FILE_CHOOSER && resultCode == RESULT_OK && data != null) {
             Uri u = data.getData();
-            System.out.println("URIIIIII" + u.toString()); // XIAOMI ANDROID 10 : content://com.mi.android.globalFileexplorer.myprovider/external_files/Movies/NOME_VIDEO_SELEZIONATO.MP4
-            String p = getUriPath(requireContext(),u);
-            //String p = u.getPath();
-            System.out.println("PATHHH"+p);  //  XIAOMI ANDROID 10 : /storage/emulated/0/Movies/NOME_VIDEO_SELEZIONATO.mp4
+            System.out.println("URI" + u.toString()); // XIAOMI ANDROID 10 : content://com.mi.android.globalFileexplorer.myprovider/external_files/Movies/NOME_VIDEO_SELEZIONATO.MP4
+
+            String p = u.getLastPathSegment(); //prende il path dall'uri
+            System.out.println(p);
+            System.out.println("PATH" + p);  //  XIAOMI ANDROID 10 : /storage/emulated/0/Movies/NOME_VIDEO_SELEZIONATO.mp4
             paths_list.add(p);
         }
     }
 
     // METODO WRAPPER DEL COMANDO
     public void runCommand(String prefix, String filepathInput, String middleOption, String filepathOutput) {
-        //ESEMPIO DI COMANDO
 
         //generate string command
         String cmd = prefix + space + filepathInput + space + middleOption + space + filepathOutput;
@@ -157,7 +159,8 @@ public class VideoFragment extends Fragment {
                 if (myc == null) {
                     myc = requireContext();
                 }
-                Toast.makeText(myc, "RESULTCODE" + rc + "DONE", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(myc, "RESULTCODE " + rc + " DONE", Toast.LENGTH_SHORT).show();
+                Toast.makeText(myc, "video completo generato", Toast.LENGTH_SHORT).show();
                 Log.i(Config.TAG, "Command execution completed successfully.");
                 //pulisco arraylist di path
                 paths_list.clear();
@@ -195,12 +198,11 @@ public class VideoFragment extends Fragment {
         }
         try {
             /*
-            test ffmpeg android 10
-            String s = "";
-            s =  s + "file" + space + apostrofo + "/storage/emulated/0/Movies/video_20201219_0532.mp4" + apostrofo + "\n";
-            s =  s + "file" + space + apostrofo + "/storage/emulated/0/Movies/video_20201219_0531.mp4" + apostrofo + "\n";
-            fos.write(s.getBytes());
-            */
+            
+            example
+             String s =  "file" + space + apostrofo + "/storage/emulated/0/Movies/video_20201219_0532.mp4" + apostrofo + "\n";
+
+             */
 
             //SCRITTURA DEI PATH SU FILE DI TESTO
             StringBuilder s = new StringBuilder();
@@ -208,6 +210,7 @@ public class VideoFragment extends Fragment {
                 s.append("file").append(space).append(apostrofo).append(path).append(apostrofo).append("\n");
             }
             fos.write(s.toString().getBytes());
+
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -222,35 +225,10 @@ public class VideoFragment extends Fragment {
     }
 
 
-
-
-    //METODO STATICO DA SPOSTARE SU UTILS DA UN URI RESTITUISCE IL PATH
-    public static String getUriPath(Context context, Uri uri){
-        if ("content".equalsIgnoreCase(uri.getScheme())) {
-            String[] projection = { "_data" };
-            Cursor cursor = null;
-
-            try {
-                cursor = context.getContentResolver().query(uri, projection, null, null, null);
-                int column_index = cursor.getColumnIndexOrThrow("_data");
-                if (cursor.moveToFirst()) {
-                    return cursor.getString(column_index);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        else if ("file".equalsIgnoreCase(uri.getScheme())) {
-            return uri.getPath();
-        }
-
-        return null;
-    }
-
-
     public static String getTimeStampString() {
         //return new SimpleDateFormat("dd-MM-yy_hh-mm-ss", Locale.getDefault()).format(new Date());
-        return new SimpleDateFormat("dd-MM-yy_mm-ss", Locale.getDefault()).format(new Date());
+        return new SimpleDateFormat("dd-MM-yy_hh-mm-ss", Locale.getDefault()).format(new Date());
     }
+
 
 }
