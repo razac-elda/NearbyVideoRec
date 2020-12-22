@@ -133,15 +133,14 @@ public class VideoFragment extends Fragment {
         super.onActivityResult(requestCode,resultCode,data);
 
 
-        if ( requestCode == REQUEST_CODE_BY_INTENT_FILE_CHOOSER && resultCode == -1){
+        if ( requestCode == REQUEST_CODE_BY_INTENT_FILE_CHOOSER && resultCode == -1 && data!= null){
             Uri u = data.getData();
             System.out.println("URIIIIII" + u.toString()); // XIAOMI ANDROID 10 : content://com.mi.android.globalFileexplorer.myprovider/external_files/Movies/NOME_VIDEO_SELEZIONATO.MP4
             String p = getUriPath(requireContext(),u);
             //String p = u.getPath();
             System.out.println("PATHHH"+p);  //  XIAOMI ANDROID 10 : /storage/emulated/0/Movies/NOME_VIDEO_SELEZIONATO.mp4
             paths_list.add(p);
-        }else
-            Toast.makeText(myc, "file non catturato", Toast.LENGTH_SHORT).show();
+        }
     }
 
     // METODO WRAPPER DEL COMANDO
