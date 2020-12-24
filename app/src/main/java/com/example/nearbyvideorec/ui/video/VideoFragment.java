@@ -103,7 +103,7 @@ public class VideoFragment extends Fragment {
 
                 runCommand("-f concat -safe 0 -i",
                         getDirectoryNameMoviesPathString() + fileNameTxt,
-                        "-c copy",
+                        "-c:v copy -c:a aac",
                         getDirectoryNameMoviesPathString() + generateNameOutputFile()
                 );
             }
@@ -131,7 +131,12 @@ public class VideoFragment extends Fragment {
 
         chooserfile.addCategory(Intent.CATEGORY_OPENABLE);
         chooserfile = Intent.createChooser(chooserfile, "Open folder");
-        startActivityForResult(chooserfile, REQUEST_CODE_BY_INTENT_FILE_CHOOSER);
+
+        //gestione presenza del file manager  //todo da testare
+        if(chooserfile.resolveActivityInfo(requireContext().getPackageManager(),0) == null)
+            Toast.makeText(requireContext(),"file manager non presente \n ... installarne uno",Toast.LENGTH_SHORT).show();
+        else
+            startActivityForResult(chooserfile, REQUEST_CODE_BY_INTENT_FILE_CHOOSER);
 
     }
 
@@ -148,7 +153,7 @@ public class VideoFragment extends Fragment {
             //todo  fare test x vedere se eliminare la variabile copia dell'uri
             Uri copieduri = u;
 
-            //String p = u.getLastPathSegment(); //prende il path dall'uri
+
             String p = "pathvuoto";
             try {
                 p = getPathFromURI(requireContext(), u);
@@ -247,13 +252,12 @@ public class VideoFragment extends Fragment {
 
 
     public static String getTimeStampString() {
-        //return new SimpleDateFormat("dd-MM-yy_hh-mm-ss", Locale.getDefault()).format(new Date());
         return new SimpleDateFormat("dd-MM-yy_hh-mm-ss", Locale.getDefault()).format(new Date());
     }
 
 
     //metodo brutale per prendere il path
-    public static String myTakePathFromURI(Uri u){
+    private static String myTakePathFromURI(Uri u){
         String uriString = u.toString();
         String[] parts = uriString.split("/storage");
         String storage = "/storage";
@@ -315,17 +319,17 @@ public class VideoFragment extends Fragment {
 
 
 
-        public static boolean isExternalStorageDocument(Uri uri) {
+        private static boolean isExternalStorageDocument(Uri uri) {
             return "com.android.externalstorage.documents".equals(uri.getAuthority());
         }
 
 
-        public static boolean isDownloadsDocument(Uri uri) {
+        private static boolean isDownloadsDocument(Uri uri) {
             return "com.android.providers.downloads.documents".equals(uri.getAuthority());
         }
 
 
-        public static boolean isMediaDocument(Uri uri) {
+        private static boolean isMediaDocument(Uri uri) {
             return "com.android.providers.media.documents".equals(uri.getAuthority());
         }
 
