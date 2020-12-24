@@ -145,14 +145,19 @@ public class VideoFragment extends Fragment {
             Uri u = data.getData();
             System.out.println("URI" + u.toString()); // XIAOMI ANDROID 10 : content://com.mi.android.globalFileexplorer.myprovider/external_files/Movies/NOME_VIDEO_SELEZIONATO.MP4
 
+            //todo  fare test x vedere se eliminare la variabile copia dell'uri
+            Uri copieduri = u;
 
-
-
-            String p = u.getLastPathSegment(); //prende il path dall'uri
-            if (Build.VERSION.SDK_INT >= 27)
-                try {
-                    p = getPathAfterOREO(requireContext(),u);
-                }catch (Exception e){
+            //String p = u.getLastPathSegment(); //prende il path dall'uri
+            String p = "pathvuoto";
+            try {
+                p = getPathFromURI(requireContext(), u);
+                System.out.println("getPathFromURI " + p);
+                if (p == null){
+                    p = myTakePathFromURI(copieduri);
+                    System.out.println("myTakePathFromURI" + p);
+                }
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
 
@@ -247,10 +252,22 @@ public class VideoFragment extends Fragment {
     }
 
 
-        //todo da testare su cell android 7 xk il metodo è per android kitkat in poi , ho cambiato in sdk 27 io.
-        //METODO DA ANDROID 8
-        private static String getPathAfterOREO(Context context, Uri uri) throws URISyntaxException {
-            boolean needToCheckUri = Build.VERSION.SDK_INT >= 27;
+    //metodo brutale per prendere il path
+    public static String myTakePathFromURI(Uri u){
+        String uriString = u.toString();
+        String[] parts = uriString.split("/storage");
+        String storage = "/storage";
+        String path = storage.concat(parts[1]);
+        return path;
+
+    }
+
+
+
+
+        //puo tornare null in alcuni casi con dispositivi vecchi
+        private static String getPathFromURI(Context context, Uri uri) throws URISyntaxException {
+            boolean needToCheckUri = Build.VERSION.SDK_INT >= 24;
             String selection = null;
             String[] selectionArgs = null;
             // Uri is different in versions after KITKAT (Android 4.4), we need to
