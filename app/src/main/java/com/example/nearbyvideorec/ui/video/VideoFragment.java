@@ -1,14 +1,19 @@
 package com.example.nearbyvideorec.ui.video;
 
 
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 
+import android.database.Cursor;
 import android.net.Uri;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,6 +35,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -139,7 +145,17 @@ public class VideoFragment extends Fragment {
             Uri u = data.getData();
             System.out.println("URI" + u.toString()); // XIAOMI ANDROID 10 : content://com.mi.android.globalFileexplorer.myprovider/external_files/Movies/NOME_VIDEO_SELEZIONATO.MP4
 
+
+
+
             String p = u.getLastPathSegment(); //prende il path dall'uri
+            if (Build.VERSION.SDK_INT >= 27)
+                try {
+                    p = getPathAfterOREO(requireContext(),u);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+
             System.out.println(p);
             System.out.println("PATH" + p);  //  XIAOMI ANDROID 10 : /storage/emulated/0/Movies/NOME_VIDEO_SELEZIONATO.mp4
             paths_list.add(p);
@@ -198,7 +214,7 @@ public class VideoFragment extends Fragment {
         }
         try {
             /*
-            
+
             example
              String s =  "file" + space + apostrofo + "/storage/emulated/0/Movies/video_20201219_0532.mp4" + apostrofo + "\n";
 
@@ -229,6 +245,73 @@ public class VideoFragment extends Fragment {
         //return new SimpleDateFormat("dd-MM-yy_hh-mm-ss", Locale.getDefault()).format(new Date());
         return new SimpleDateFormat("dd-MM-yy_hh-mm-ss", Locale.getDefault()).format(new Date());
     }
+
+
+        //todo da testare su cell android 7 xk il metodo è per android kitkat in poi , ho cambiato in sdk 27 io.
+        //METODO DA ANDROID 8
+        private static String getPathAfterOREO(Context context, Uri uri) throws URISyntaxException {
+            boolean needToCheckUri = Build.VERSION.SDK_INT >= 27;
+            String selection = null;
+            String[] selectionArgs = null;
+            // Uri is different in versions after KITKAT (Android 4.4), we need to
+            // deal with different Uris.
+            if (needToCheckUri && DocumentsContract.isDocumentUri(context.getApplicationContext(), uri)) {
+                if (isExternalStorageDocument(uri)) {
+                    final String docId = DocumentsContract.getDocumentId(uri);
+                    final String[] split = docId.split(":");
+                    return Environment.getExternalStorageDirectory() + "/" + split[1];
+                } else if (isDownloadsDocument(uri)) {
+                    final String id = DocumentsContract.getDocumentId(uri);
+                    uri = ContentUris.withAppendedId(
+                            Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+                } else if (isMediaDocument(uri)) {
+                    final String docId = DocumentsContract.getDocumentId(uri);
+                    final String[] split = docId.split(":");
+                    final String type = split[0];
+                    if ("image".equals(type)) {
+                        uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                    } else if ("video".equals(type)) {
+                        uri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+                    } else if ("audio".equals(type)) {
+                        uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+                    }
+                    selection = "_id=?";
+                    selectionArgs = new String[]{ split[1] };
+                }
+            }
+            if ("content".equalsIgnoreCase(uri.getScheme())) {
+                String[] projection = { MediaStore.Images.Media.DATA };
+                Cursor cursor = null;
+                try {
+                    cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs, null);
+                    int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                    if (cursor.moveToFirst()) {
+                        return cursor.getString(column_index);
+                    }
+                } catch (Exception e) {
+                }
+            } else if ("file".equalsIgnoreCase(uri.getScheme())) {
+                return uri.getPath();
+            }
+            return null;
+        }
+
+
+
+        public static boolean isExternalStorageDocument(Uri uri) {
+            return "com.android.externalstorage.documents".equals(uri.getAuthority());
+        }
+
+
+        public static boolean isDownloadsDocument(Uri uri) {
+            return "com.android.providers.downloads.documents".equals(uri.getAuthority());
+        }
+
+
+        public static boolean isMediaDocument(Uri uri) {
+            return "com.android.providers.media.documents".equals(uri.getAuthority());
+        }
+
 
 
 }
