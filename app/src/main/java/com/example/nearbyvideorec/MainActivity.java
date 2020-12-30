@@ -36,6 +36,7 @@ import androidx.navigation.ui.NavigationUI;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -57,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
     private String SERVICE_ID;
     private Boolean legacy;
     private HashMap<String, ConnectionInfo> connectedEndpoints;
+    private ArrayList<String> selectedVideoNames;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +103,8 @@ public class MainActivity extends AppCompatActivity {
         navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
+
+
 
     }
 
@@ -383,4 +387,9 @@ public class MainActivity extends AppCompatActivity {
             };
 
 
+
+    private void setSelectedVideoNames(){
+
+
+    }
 }
