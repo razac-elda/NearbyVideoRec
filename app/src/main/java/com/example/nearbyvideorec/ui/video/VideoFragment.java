@@ -73,14 +73,6 @@ public class VideoFragment extends Fragment {
     private ArrayList<String> videoNames = new ArrayList<>();
 
 
-
-
-
-
-
-
-
-
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         videoViewModel = new ViewModelProvider(this).get(VideoViewModel.class);

@@ -512,11 +512,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public static String getTimeStampString() {
-        return new SimpleDateFormat("dd-MM-yy_hh-mm-ss", Locale.getDefault()).format(new Date());
-    }
-
-
     //aprire intent file chooser
     public void openMyFolder() {
         Intent chooserfile = new Intent(Intent.ACTION_GET_CONTENT);
@@ -546,30 +541,22 @@ public class MainActivity extends AppCompatActivity {
             Uri u = data.getData();
             System.out.println("URI" + u.toString()); // XIAOMI ANDROID 10 : content://com.mi.android.globalFileexplorer.myprovider/external_files/Movies/NOME_VIDEO_SELEZIONATO.MP4
 
-            //todo  fare test x vedere se eliminare la variabile copia dell'uri
-            Uri copieduri = u;
-
-
             String p = "pathvuoto";
             try {
                 p = getPathFromURI(context, u);
                 System.out.println("getPathFromURI  " + p);
                 if (p == null){
-                    p = myTakePathFromURI(copieduri);
+                    p = myTakePathFromURI(u);
                     System.out.println("myTakePathFromURI  " + p);
                 }
                 //aggiunta ad array di nomi
-
-                nomiLista.add(u.getLastPathSegment());
+                String name = takeFileNameFromPath(p);
+                nomiLista.add(name);
                 savedUIData.setVideoNamesText(nomiLista);
 
-                //System.out.println(videoNames);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
-
-
             System.out.println("PATH" + p);  //  XIAOMI ANDROID 10 : /storage/emulated/0/Movies/NOME_VIDEO_SELEZIONATO.mp4
             paths_list.add(p);
 
@@ -577,15 +564,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //metodo brutale per prendere il path
-    public static String myTakePathFromURI(Uri u){
-        String uriString = u.toString();
-        String[] parts = uriString.split("/storage");
-        String storage = "/storage";
-        String path = storage.concat(parts[1]);
-        return path;
 
-    }
     // todo controllare con https://gist.github.com/webserveis/c6d55da4dbfc2fdd13d91dc5b7f85499
     //puo tornare null in alcuni casi con dispositivi vecchi
     private static String getPathFromURI(Context context, Uri uri) throws URISyntaxException {
@@ -661,6 +640,34 @@ public class MainActivity extends AppCompatActivity {
         savedUIData.setVideoNamesText(nomiLista);
         navController.navigate(R.id.navigation_video);
     }
+
+    //Da spostare su utils prende l'ultima occorrenza dello '/'  nel nostro caso serve per prendere il nome del file
+    //dato un path
+    public String takeFileNameFromPath(String path){
+
+        System.out.println("PATHSTRING " + path);
+        String name;
+        int lastIndex = path.lastIndexOf("/");
+        if (lastIndex != -1){
+            name = path.substring(lastIndex+1);
+            return name;
+        }else return "errore";
+    }
+
+    //metodo brutale per prendere il path   (si puo spostare su utils)
+    public static String myTakePathFromURI(Uri u){
+        String uriString = u.toString();
+        String[] parts = uriString.split("/storage");
+        String storage = "/storage";
+        String path = storage.concat(parts[1]);
+        return path;
+
+    }
+    // (si puo spostare su utils)
+    public static String getTimeStampString() {
+        return new SimpleDateFormat("dd-MM-yy_hh-mm-ss", Locale.getDefault()).format(new Date());
+    }
+
 
 
 }
