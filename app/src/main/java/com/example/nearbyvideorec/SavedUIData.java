@@ -1,7 +1,5 @@
 package com.example.nearbyvideorec;
 
-import android.widget.TextView;
-
 import java.util.ArrayList;
 
 // Singleton-enum pattern is the suggested implementation of a Singleton nowadays.

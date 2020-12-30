@@ -1,57 +1,22 @@
 package com.example.nearbyvideorec.ui.video;
 
 
-import android.content.ContentUris;
-import android.content.Context;
-import android.content.Intent;
-
-import android.database.Cursor;
-import android.net.Uri;
-
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-
-import android.provider.DocumentsContract;
-import android.provider.MediaStore;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-
 import androidx.lifecycle.ViewModelProvider;
-
 
 import com.example.nearbyvideorec.MainActivity;
 import com.example.nearbyvideorec.R;
 import com.example.nearbyvideorec.SavedUIData;
 
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Objects;
-
-import com.arthenica.mobileffmpeg.Config;
-import com.arthenica.mobileffmpeg.FFmpeg;
-
-
-import static android.app.Activity.RESULT_OK;
-import static com.arthenica.mobileffmpeg.Config.RETURN_CODE_CANCEL;
-import static com.arthenica.mobileffmpeg.Config.RETURN_CODE_SUCCESS;
 
 //TODO IMPORTANTE: I TELEFONI DEVONO AVERE UNA SCHEDA SD PRESENTE NEL DISPOSITIVO
 public class VideoFragment extends Fragment {
