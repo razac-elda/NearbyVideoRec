@@ -7,7 +7,7 @@
     tools:context=".ui.video.VideoFragment">
 
     <TextView
-        android:id="@+id/text_notifications"
+        android:id="@+id/videoNameList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -24,24 +24,27 @@
         android:id="@+id/btn_merge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Merge Video"
+        android:layout_marginBottom="172dp"
 
+        android:text="Merge Video"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.169"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/text_notifications" />
+        app:layout_constraintTop_toTopOf="@+id/videoNameList" />
 
     <Button
         android:id="@+id/btn_select_files"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="go intent"
+        android:layout_marginBottom="172dp"
 
+        android:text="go intent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.996"
+        app:layout_constraintHorizontal_bias="0.835"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/text_notifications"
+        app:layout_constraintTop_toTopOf="@+id/videoNameList"
         app:layout_constraintVertical_bias="0.501" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

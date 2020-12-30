@@ -1,7 +1,5 @@
 package com.example.nearbyvideorec;
 
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.net.Uri;
@@ -33,18 +31,27 @@ import com.google.android.gms.nearby.connection.PayloadCallback;
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate;
 import com.google.android.gms.nearby.connection.Strategy;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import org.jetbrains.annotations.NotNull;
+
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
+
 import com.otaliastudios.cameraview.CameraListener;
 import com.otaliastudios.cameraview.CameraView;
 import com.otaliastudios.cameraview.VideoResult;
 import com.otaliastudios.cameraview.controls.Engine;
 import com.otaliastudios.cameraview.controls.Mode;
-
-import org.jetbrains.annotations.NotNull;
-
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -63,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
     private Context activity_context;
     private String SERVICE_ID;
     private HashMap<String, ConnectionInfo> connectedEndpoints;
+    private ArrayList<String> selectedVideoNames;
 
     private CameraView camera;
     private ContentResolver resolver;
