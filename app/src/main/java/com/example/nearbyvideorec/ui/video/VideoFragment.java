@@ -81,7 +81,7 @@ public class VideoFragment extends Fragment {
             btn_merge.setEnabled(false);
         } else {
             for (String name : filenames)
-                tv_names.append(name + "\n");
+                tv_names.append(name + System.lineSeparator());
         }
 
         btn_choose_files.setOnClickListener(choose_OnClickListener);
