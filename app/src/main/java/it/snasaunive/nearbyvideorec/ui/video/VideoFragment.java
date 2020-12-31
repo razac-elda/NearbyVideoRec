@@ -1,14 +1,17 @@
 package it.snasaunive.nearbyvideorec.ui.video;
 
 
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -21,6 +24,12 @@ import it.snasaunive.nearbyvideorec.SavedUIData;
 import it.snasaunive.nearbyvideorec.Utils;
 
 public class VideoFragment extends Fragment {
+
+    private final int REQUEST_PERMISSIONS_CODE = 3;
+    private final String[] REQUIRED_PERMISSIONS = new String[]{
+            "android.permission.WRITE_EXTERNAL_STORAGE",
+            "android.permission.READ_EXTERNAL_STORAGE"
+    };
 
     private VideoViewModel videoViewModel;
     private SavedUIData savedUIData;
@@ -36,7 +45,13 @@ public class VideoFragment extends Fragment {
     private final View.OnClickListener choose_OnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            ((MainActivity) requireActivity()).openMyFolder();
+            if (allPermissionsGranted()) {
+                // All permissions already granted
+                ((MainActivity) requireActivity()).openMyFolder();
+            } else {
+                // Missing permissions, ask user to accept
+                requestPermissions(REQUIRED_PERMISSIONS, REQUEST_PERMISSIONS_CODE);
+            }
         }
     };
 
@@ -90,6 +105,33 @@ public class VideoFragment extends Fragment {
 
         return root;
 
+    }
+
+    // Permission management
+
+    // Cycle through permissions, reject when at least one is rejected
+    private boolean allPermissionsGranted() {
+        boolean accept = true;
+
+        for (String permission : REQUIRED_PERMISSIONS) {
+            if (ContextCompat.checkSelfPermission(requireActivity(), permission) != PackageManager.PERMISSION_GRANTED)
+                accept = false;
+        }
+        return accept;
+    }
+
+    // Called after "requestPermissions", check if all permissions were accepted
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+
+        if (requestCode == REQUEST_PERMISSIONS_CODE) {
+            if (allPermissionsGranted()) {
+                ((MainActivity) requireActivity()).openMyFolder();
+            } else {
+                // User denied some permissions
+                Toast.makeText(requireContext(), getString(R.string.permissions_denied), Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
 }
