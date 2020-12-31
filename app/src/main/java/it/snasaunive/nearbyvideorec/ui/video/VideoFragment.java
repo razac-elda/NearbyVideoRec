@@ -44,7 +44,7 @@ public class VideoFragment extends Fragment {
         @Override
         public void onClick(View v) {
             try {
-                Utils.createTextFile(((MainActivity) requireActivity()).getPathList());
+                Utils.createTextFile(requireContext(), ((MainActivity) requireActivity()).getPathList());
             } catch (IOException e) {
                 e.printStackTrace();
             }

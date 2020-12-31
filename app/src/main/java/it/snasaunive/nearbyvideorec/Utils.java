@@ -47,6 +47,7 @@ public final class Utils {
         return new SimpleDateFormat("dd-MM-yy_hh-mm-ss", Locale.getDefault()).format(new Date());
     }
 
+    @SuppressWarnings("deprecation")
     public static FileDescriptor createVideoFile(Context context) throws FileNotFoundException {
 
         resolver = context.getContentResolver();
@@ -85,16 +86,16 @@ public final class Utils {
         return resolver.openFileDescriptor(uriSavedVideo, "w").getFileDescriptor();
     }
 
-    public static void createTextFile(ArrayList<String> pathList) throws IOException {
+    public static void createTextFile(Context context, ArrayList<String> pathList) throws IOException {
 
-        String directory = Environment.getExternalStorageDirectory().getAbsolutePath() +
+        /*String directory = Environment.getExternalStorageDirectory().getAbsolutePath() +
                 File.separator + Environment.DIRECTORY_MOVIES + File.separator + "NearbyVideoRec";
 
         File newDirectory = new File(directory);
         if (!newDirectory.exists())
             newDirectory.mkdirs();
-
-        File textFile = new File(directory, "pathList.txt");
+        */
+        File textFile = new File(context.getExternalFilesDir(null), "pathList.txt");
         FileWriter writer = new FileWriter(textFile);
         for (String path : pathList)
             writer.write("file '" + path + "'" + System.lineSeparator());
@@ -131,12 +132,14 @@ public final class Utils {
         String fileOutputName = "merged_" + Utils.getTimeStampString() + ".mp4";
         String directory = Environment.getExternalStorageDirectory().getAbsolutePath() +
                 File.separator + Environment.DIRECTORY_MOVIES + File.separator + "NearbyVideoRec" + File.separator;
-        String cmd = "-f concat -safe 0 -i " + directory + "pathList.txt" + " -c:v copy -c:a aac " + directory + fileOutputName;
+        File textFile = new File(context.getExternalFilesDir(null), "pathList.txt");
+        String cmd = "-f concat -safe 0 -i " + textFile.getAbsolutePath() + " -c:v copy -c:a aac " + directory + fileOutputName;
 
         int result = FFmpeg.execute(cmd);
 
         switch (result) {
             case RETURN_CODE_SUCCESS:
+                textFile.delete();
                 Toast.makeText(context, R.string.merge_success, Toast.LENGTH_SHORT).show();
                 break;
             case RETURN_CODE_CANCEL:
