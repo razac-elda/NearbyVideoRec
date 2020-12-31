@@ -485,14 +485,23 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_CODE_BY_INTENT_FILE_CHOOSER && resultCode == RESULT_OK && data != null) {
             Uri uri = data.getData();
             String path = Utils.getPathFromURI(context, uri);
-            if (path == null) {
+            /*if (path == null)
                 path = Utils.TakePathFromURIOldDevice(uri);
+            */
+            if (path != null) {
+                pathList.add(path);
+                int lastIndex = path.lastIndexOf(File.separator);
+                if (lastIndex != -1)
+                    fileNames.add(path.substring(lastIndex + 1));
+                navController.navigate(R.id.navigation_video);
+            } else {
+                new AlertDialog.Builder(activity_context, R.style.Theme_ConnectionDialog)
+                        .setTitle(getString(R.string.error))
+                        .setMessage(getString(R.string.unsupported_storage))
+                        .setPositiveButton(getString(R.string.ok), null)
+                        .setIcon(R.drawable.ic_baseline_warning)
+                        .show();
             }
-            pathList.add(path);
-            int lastIndex = path.lastIndexOf(File.separator);
-            if (lastIndex != -1)
-                fileNames.add(path.substring(lastIndex + 1));
-            navController.navigate(R.id.navigation_video);
         }
     }
 

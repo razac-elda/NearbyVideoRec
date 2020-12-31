@@ -20,7 +20,7 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="error">Error</string>
-    <string name="error_discovery_server">Cannot switch to discovery if you are the server!</string>
+    <string name="error_discovery_server">Cannot switch to discovery if you are the server! Disconnect first.</string>
     <string name="advertising">Advertising</string>
     <string name="discovering">Discovering</string>
     <string name="device_disconnected">Device disconnected:</string>
@@ -49,4 +49,5 @@
         ]]>
     </string>
     <string name="merge_location">Merged video are located in Movies/NearbyVideoRec</string>
+    <string name="unsupported_storage">Device is using unsupported storage system. If you are selecting the video from a quick access tab try instead to navigate manually to the file location.</string>
 </resources>

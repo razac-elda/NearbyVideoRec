@@ -210,11 +210,12 @@ public final class Utils {
         return "com.android.providers.media.documents".equals(uri.getAuthority());
     }
 
+    /*
     public static String TakePathFromURIOldDevice(Uri u) {
         String uriString = u.toString();
         String[] parts = uriString.split("/storage");
         String storage = "/storage";
         return storage.concat(parts[1]);
     }
-
+    */
 }
