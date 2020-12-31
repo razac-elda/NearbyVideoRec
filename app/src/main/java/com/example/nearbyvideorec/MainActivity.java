@@ -1,5 +1,6 @@
 package com.example.nearbyvideorec;
 
+
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -68,7 +69,6 @@ public class MainActivity extends AppCompatActivity {
     private Context activity_context;
     private String SERVICE_ID;
     private HashMap<String, ConnectionInfo> connectedEndpoints;
-
     private ArrayList<String> pathList;
     private ArrayList<String> fileNames;
     private Uri folderUri;
@@ -126,6 +126,7 @@ public class MainActivity extends AppCompatActivity {
         });
         camera.setMode(Mode.VIDEO);
         camera.close();
+
 
     }
 
@@ -503,6 +504,5 @@ public class MainActivity extends AppCompatActivity {
         fileNames.clear();
         navController.navigate(R.id.navigation_video);
     }
-
 
 }

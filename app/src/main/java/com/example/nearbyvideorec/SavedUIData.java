@@ -1,5 +1,6 @@
 package com.example.nearbyvideorec;
 
+
 // Singleton-enum pattern is the suggested implementation of a Singleton nowadays.
 public enum SavedUIData {
     INSTANCE;
@@ -9,7 +10,6 @@ public enum SavedUIData {
     private Boolean server_status_switch;
     private Boolean recording;
     private String client_connection_status;
-    private String videoNamesText;
 
     // Initial status for each element when fragment is created for the first time.
     SavedUIData() {
@@ -17,7 +17,6 @@ public enum SavedUIData {
         server_status_switch = false;
         recording = false;
         client_connection_status = "Not connected";
-        videoNamesText = "No video selected";
 
     }
 
