@@ -50,7 +50,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -541,26 +540,22 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_CODE_BY_INTENT_FILE_CHOOSER && resultCode == RESULT_OK && data != null) {
             Uri u = data.getData();
             System.out.println("URI" + u.toString()); // XIAOMI ANDROID 10 : content://com.mi.android.globalFileexplorer.myprovider/external_files/Movies/NOME_VIDEO_SELEZIONATO.MP4
-            String uriString = Uri.decode(u.toString());
-            System.out.println("URISTRING:   "+uriString);
 
             String p = "pathvuoto";
             try {
                 p = getPathFromURI(context, u);
                 System.out.println("getPathFromURI  " + p);
                 if (p == null){
-                    p = myTakePathFromURI(uriString);
+                    p = myTakePathFromURI(u);
                     System.out.println("myTakePathFromURI  " + p);
                 }
-            } catch (Exception e) {
-
-                p = myTakePathFromURI(uriString);
-                e.printStackTrace();
-            }finally {
                 //aggiunta ad array di nomi
                 String name = takeFileNameFromPath(p);
                 nomiLista.add(name);
                 savedUIData.setVideoNamesText(nomiLista);
+
+            } catch (Exception e) {
+                e.printStackTrace();
             }
             System.out.println("PATH" + p);  //  XIAOMI ANDROID 10 : /storage/emulated/0/Movies/NOME_VIDEO_SELEZIONATO.mp4
             paths_list.add(p);
@@ -660,8 +655,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //metodo brutale per prendere il path   (si puo spostare su utils)
-    public static String myTakePathFromURI(String uriString){
-        //String uriString = u.toString();
+    public static String myTakePathFromURI(Uri u){
+        String uriString = u.toString();
         String[] parts = uriString.split("/storage");
         String storage = "/storage";
         String path = storage.concat(parts[1]);
