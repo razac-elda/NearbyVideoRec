@@ -132,6 +132,10 @@ public final class Utils {
         String fileOutputName = "merged_" + Utils.getTimeStampString() + ".mp4";
         String directory = Environment.getExternalStorageDirectory().getAbsolutePath() +
                 File.separator + Environment.DIRECTORY_MOVIES + File.separator + "NearbyVideoRec" + File.separator;
+
+        File newDirectory = new File(directory);
+        if (!newDirectory.exists())
+            newDirectory.mkdirs();
         File textFile = new File(context.getExternalFilesDir(null), "pathList.txt");
         String cmd = "-f concat -safe 0 -i " + textFile.getAbsolutePath() + " -c:v copy -c:a aac " + directory + fileOutputName;
 
