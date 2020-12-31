@@ -1,17 +1,21 @@
 package com.example.nearbyvideorec;
 
+
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
@@ -41,9 +45,11 @@ import com.otaliastudios.cameraview.controls.Mode;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
@@ -63,6 +69,11 @@ public class MainActivity extends AppCompatActivity {
     private Context activity_context;
     private String SERVICE_ID;
     private HashMap<String, ConnectionInfo> connectedEndpoints;
+    private ArrayList<String> pathList;
+    private ArrayList<String> fileNames;
+    private Uri folderUri;
+
+    private final Integer REQUEST_CODE_BY_INTENT_FILE_CHOOSER = 2048;
 
     private CameraView camera;
     private ContentResolver resolver;
@@ -76,6 +87,8 @@ public class MainActivity extends AppCompatActivity {
         activity_context = MainActivity.this;
         SERVICE_ID = getPackageName();
         connectedEndpoints = new HashMap<>();
+        pathList = new ArrayList<>();
+        fileNames = new ArrayList<>();
 
         setContentView(R.layout.activity_main);
 
@@ -113,6 +126,7 @@ public class MainActivity extends AppCompatActivity {
         });
         camera.setMode(Mode.VIDEO);
         camera.close();
+
 
     }
 
@@ -372,7 +386,7 @@ public class MainActivity extends AppCompatActivity {
 
                         FileDescriptor videoFileDescriptor = null;
                         try {
-                            videoFileDescriptor = Utils.createFile(context);
+                            videoFileDescriptor = Utils.createVideoFile(context);
                         } catch (FileNotFoundException e) {
                             e.printStackTrace();
                         }
@@ -445,5 +459,50 @@ public class MainActivity extends AppCompatActivity {
                     // A previously discovered endpoint has gone away.
                 }
             };
+
+    public ArrayList<String> getPathList() {
+        return pathList;
+    }
+
+    public ArrayList<String> getFileNames() {
+        return fileNames;
+    }
+
+    public void openMyFolder() {
+
+        Intent fileChooser = new Intent(Intent.ACTION_GET_CONTENT);
+
+        folderUri = Uri.parse(Environment.getExternalStorageDirectory().getAbsolutePath()
+                + File.separator + Environment.DIRECTORY_MOVIES + File.separator);
+        fileChooser.setDataAndType(folderUri, "video/mp4");
+        fileChooser.addCategory(Intent.CATEGORY_OPENABLE);
+        fileChooser = Intent.createChooser(fileChooser, "Open folder");
+
+        if (fileChooser.resolveActivityInfo(context.getPackageManager(), 0) != null)
+            startActivityForResult(fileChooser, REQUEST_CODE_BY_INTENT_FILE_CHOOSER);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_BY_INTENT_FILE_CHOOSER && resultCode == RESULT_OK && data != null) {
+            Uri uri = data.getData();
+            String path = Utils.getPathFromURI(context, uri);
+            if (path == null) {
+                path = Utils.TakePathFromURIOldDevice(uri);
+            }
+            pathList.add(path);
+            int lastIndex = path.lastIndexOf("/");
+            if (lastIndex != -1)
+                fileNames.add(path.substring(lastIndex + 1));
+            navController.navigate(R.id.navigation_video);
+        }
+    }
+
+    public void clearPaths() {
+        pathList.clear();
+        fileNames.clear();
+        navController.navigate(R.id.navigation_video);
+    }
 
 }
