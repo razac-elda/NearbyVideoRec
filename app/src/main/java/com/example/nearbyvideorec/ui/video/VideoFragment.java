@@ -15,252 +15,81 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.nearbyvideorec.MainActivity;
 import com.example.nearbyvideorec.R;
 import com.example.nearbyvideorec.SavedUIData;
+import com.example.nearbyvideorec.Utils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
-//TODO IMPORTANTE: I TELEFONI DEVONO AVERE UNA SCHEDA SD PRESENTE NEL DISPOSITIVO
 public class VideoFragment extends Fragment {
-
 
     private VideoViewModel videoViewModel;
     private SavedUIData savedUIData;
 
-    //private Context myc;
-    private String fileNameTxt = "myListpaths.txt";
-
     private Button btn_merge;
-    private Button btn_intent_files;
-    private TextView videoNamesTextView;
+    private Button btn_choose_files;
     private Button btn_clear_files;
-    private ArrayList<String> paths_list = new ArrayList<String>();
+    private TextView tv_names;
 
+    private ArrayList<String> paths_list;
+    private ArrayList<String> videoNames;
 
-    private ArrayList<String> videoNames = new ArrayList<>();
+    private final View.OnClickListener choose_OnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            ((MainActivity) requireActivity()).openMyFolder();
+        }
+    };
 
+    private final View.OnClickListener merge_OnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            try {
+                Utils.createTextFile(((MainActivity) requireActivity()).getPathList());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Utils.mergeVideo(requireContext());
+            ((MainActivity) requireActivity()).clearPaths();
+        }
+    };
+
+    private final View.OnClickListener clear_OnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            ((MainActivity) requireActivity()).clearPaths();
+        }
+    };
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         videoViewModel = new ViewModelProvider(this).get(VideoViewModel.class);
         View root = inflater.inflate(R.layout.fragment_video, container, false);
-
-
         savedUIData = SavedUIData.INSTANCE;
 
+        paths_list = new ArrayList<>();
+        videoNames = new ArrayList<>();
 
+        btn_choose_files = (Button) root.findViewById(R.id.btn_select_files);
         btn_merge = (Button) root.findViewById(R.id.btn_merge);
-        btn_intent_files = (Button) root.findViewById(R.id.btn_select_files);
-        videoNamesTextView = (TextView) root.findViewById(R.id.videoNameList);
         btn_clear_files = (Button) root.findViewById(R.id.btn_clear_files);
-        //textprova = "ciao"+"\n"+"sono una"+"\n"+"stringa di prova"+"\n";
+        tv_names = (TextView) root.findViewById(R.id.filename);
 
-        videoNamesTextView.setText(savedUIData.getVideoNamesText());
+        ArrayList<String> filenames = ((MainActivity) requireActivity()).getFileNames();
+        if (filenames.isEmpty()) {
+            tv_names.setText(R.string.no_file_selected);
+            btn_clear_files.setEnabled(false);
+            btn_merge.setEnabled(false);
+        } else {
+            for (String name : filenames)
+                tv_names.append(name + "\n");
+        }
 
-        // aggiunta bottone merge più listener
-        btn_merge.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                //genera il file txt
-                ((MainActivity) requireActivity()).generateFileTxT(fileNameTxt);
-
-
-
-                String fileOutputName = ((MainActivity) requireActivity()).generateNameOutputFile();
-                ((MainActivity) requireActivity()).runCommand("-f concat -safe 0 -i",
-                        ((MainActivity) requireActivity()).getDirectoryNameMoviesPathString() + fileNameTxt,
-                        "-c:v copy -c:a aac",
-                        ((MainActivity) requireActivity()).getDirectoryNameMoviesPathString() + fileOutputName
-                );
-
-            }
-        });
-        //aggiunta bottone file chooser + listener
-        btn_intent_files.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                ((MainActivity) requireActivity()).openMyFolder();
-            }
-        });
-
-        btn_clear_files.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                ((MainActivity) requireActivity()).pulisciLista();
-            }
-        });
-
+        btn_choose_files.setOnClickListener(choose_OnClickListener);
+        btn_merge.setOnClickListener(merge_OnClickListener);
+        btn_clear_files.setOnClickListener(choose_OnClickListener);
 
         return root;
 
     }
-
-
-
-
-
-    // METODO WRAPPER DEL COMANDO
-
-
-
-/*
-    public static String getPathFromURI( Context context,  Uri uri) {
-
-        final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
-
-        // DocumentProvider
-        if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
-            // ExternalStorageProvider
-            if (isExternalStorageDocument(uri)) {
-                final String docId = DocumentsContract.getDocumentId(uri);
-                final String[] split = docId.split(":");
-                final String type = split[0];
-
-                if ("primary".equalsIgnoreCase(type)) {
-                    return Environment.getExternalStorageDirectory() + "/" + split[1];
-                }
-
-                // TODO handle non-primary volumes
-            }
-            // DownloadsProvider
-            else if (isDownloadsDocument(uri)) {
-
-                final String id = DocumentsContract.getDocumentId(uri);
-                final Uri contentUri = ContentUris.withAppendedId(
-                        Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
-
-                return getDataColumn(context, contentUri, null, null);
-            }
-            // MediaProvider
-            else if (isMediaDocument(uri)) {
-                String docId = DocumentsContract.getDocumentId(uri);
-                String[] split = docId.split(":");
-                String type = split[0];
-
-                Uri contentUri = null;
-                if ("image".equals(type)) {
-                    contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-                } else if ("video".equals(type)) {
-                    contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
-                } else if ("audio".equals(type)) {
-                    contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-                }
-
-                 String selection = "_id=?";
-                 String[] selectionArgs = new String[]{
-                        split[1]
-                };
-
-                return getDataColumn(context, contentUri, selection, selectionArgs);
-            }
-        }
-        // MediaStore (and general)
-        else if ("content".equalsIgnoreCase(uri.getScheme())) {
-
-            // Return the remote address
-            if (isGooglePhotosUri(uri))
-                return uri.getLastPathSegment();
-
-            return getDataColumn(context, uri, null, null);
-        }
-        // File
-        else if ("file".equalsIgnoreCase(uri.getScheme())) {
-            return uri.getPath();
-        }
-        System.out.println("IL DOCUMENT PROVIDER RITORNERA NULL ");
-        return null;
-    }
-
-    /**
-     * Get the value of the data column for this Uri. This is useful for
-     * MediaStore Uris, and other file-based ContentProviders.
-     *
-     * @param context       The context.
-     * @param uri           The Uri to query.
-     * @param selection     (Optional) Filter used in the query.
-     * @param selectionArgs (Optional) Selection arguments used in the query.
-     * @return The value of the _data column, which is typically a file path.
-     *//*
-
-    public static String getDataColumn(Context context, Uri uri, String selection,
-                                       String[] selectionArgs) {
-
-        Cursor cursor = null;
-         String column = "_data";
-         String[] projection = {
-                column
-        };
-
-        try {
-            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs,
-                    null);
-            if (cursor != null && cursor.moveToFirst()) {
-                int index = cursor.getColumnIndexOrThrow(column);
-                return cursor.getString(index);
-            }
-        } finally {
-            if (cursor != null)
-                cursor.close();
-        }
-        System.out.println("il GETDATACOLUMN RITORNERà NULL");
-        return null;
-    }
-
-
-    */
-/**
-     * @param uri The Uri to check.
-     * @return Whether the Uri authority is ExternalStorageProvider.
-     *//*
-
-    public static boolean isExternalStorageDocument(Uri uri) {
-        return "com.android.externalstorage.documents".equals(uri.getAuthority());
-    }
-
-    */
-/**
-     * @param uri The Uri to check.
-     * @return Whether the Uri authority is DownloadsProvider.
-     *//*
-
-    public static boolean isDownloadsDocument(Uri uri) {
-        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
-    }
-
-    */
-/**
-     * @param uri The Uri to check.
-     * @return Whether the Uri authority is MediaProvider.
-     *//*
-
-    public static boolean isMediaDocument(Uri uri) {
-        String normalAutority = "com.android.providers.media.documents";
-        String huaweiAutorithy = "com.huawei.hidisk.provider"; //todo mettere la stringa strana
-
-        if (normalAutority.equals(uri.getAuthority()) || huaweiAutorithy.equals(uri.getAuthority()))
-            return true;
-        else return false;
-    }
-
-    */
-/**
-     * @param uri The Uri to check.
-     * @return Whether the Uri authority is Google Photos.
-     *//*
-
-    public static boolean isGooglePhotosUri(Uri uri) {
-        return "com.google.android.apps.photos.content".equals(uri.getAuthority());
-    }
-
-*/
-
-
-
-
-
-
-
-
 
 }

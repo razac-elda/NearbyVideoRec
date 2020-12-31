@@ -37,8 +37,8 @@ public class ClientFragment extends Fragment {
     private ClientViewModel clientViewModel;
     private SavedUIData savedUIData;
 
-    private SwitchMaterial status_switch;
-    private TextView connection_status;
+    private SwitchMaterial swc_status;
+    private TextView tv_connection_status;
 
     private HashMap<String, ConnectionInfo> connectedDevices;
 
@@ -70,14 +70,14 @@ public class ClientFragment extends Fragment {
         savedUIData = SavedUIData.INSTANCE;
 
         // Switch click listener.
-        status_switch = (SwitchMaterial) root.findViewById(R.id.client_status_switch);
-        status_switch.setOnClickListener(switch_onClickListener);
+        swc_status = (SwitchMaterial) root.findViewById(R.id.client_status_switch);
+        swc_status.setOnClickListener(switch_onClickListener);
 
         // Restore status from SavedUIData.
-        status_switch.setChecked(savedUIData.getClient_status_switch());
+        swc_status.setChecked(savedUIData.getClient_status_switch());
 
-        connection_status = (TextView) root.findViewById(R.id.client_status);
-        connection_status.setTextColor(ContextCompat.getColor(requireContext(), R.color.red));
+        tv_connection_status = (TextView) root.findViewById(R.id.client_status);
+        tv_connection_status.setTextColor(ContextCompat.getColor(requireContext(), R.color.red));
 
         // Update TextView with info about the connection
         if (!savedUIData.getServer_status_switch()) {
@@ -94,13 +94,13 @@ public class ClientFragment extends Fragment {
 
             for (ConnectionInfo info : connectedDevices.values()) {
                 server_name = getString(R.string.client_connected_to) + " " + info.getEndpointName();
-                connection_status.setTextColor(ContextCompat.getColor(requireContext(), R.color.green));
+                tv_connection_status.setTextColor(ContextCompat.getColor(requireContext(), R.color.green));
             }
-            connection_status.setText(server_name);
+            tv_connection_status.setText(server_name);
         } else {
             // If connected as a server do not show any device in client tab.
             String connected_as_server = getString(R.string.connected_as_a_server);
-            connection_status.setText(connected_as_server);
+            tv_connection_status.setText(connected_as_server);
         }
 
         return root;
@@ -144,7 +144,7 @@ public class ClientFragment extends Fragment {
             } else {
                 // User denied some permissions
                 Toast.makeText(requireContext(), getString(R.string.permissions_denied), Toast.LENGTH_LONG).show();
-                status_switch.setChecked(false);
+                swc_status.setChecked(false);
             }
         }
     }

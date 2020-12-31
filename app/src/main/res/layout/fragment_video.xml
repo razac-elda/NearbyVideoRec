@@ -7,79 +7,70 @@
     tools:context=".ui.video.VideoFragment">
 
 
-    <TextView
-        android:id="@+id/headerList"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="56dp"
-        android:text="Selected videos : "
-        android:textAlignment="center"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="4dp" />
-
-    <ScrollView
-        android:id="@+id/scrollView"
-        android:layout_width="407dp"
-        android:layout_height="270dp"
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/nestedScrollView"
+        android:layout_width="0dp"
+        android:layout_height="105dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="8dp"
         android:background="@drawable/textview_border"
         android:scrollbarStyle="insideInset"
-        app:layout_constraintBottom_toTopOf="@+id/btn_merge"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/headerList"
-        app:layout_constraintVertical_bias="1.0">
+        app:layout_constraintTop_toBottomOf="@+id/btn_select_files"
+        app:layout_constraintVertical_bias="0.104">
 
         <TextView
-            android:id="@+id/videoNameList"
+            android:id="@+id/filename"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="-2dp"
-            android:text="Selected videoslist"
+            android:layout_marginTop="5dp"
+            android:singleLine="false"
             android:textAlignment="center"
-            android:textSize="20sp"
-            android:textStyle="italic" />
-
-    </ScrollView>
-
-    <Button
-        android:id="@+id/btn_merge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-
-        android:text="merge"
-        app:layout_constraintBottom_toTopOf="@+id/btn_select_files"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/headerList"
-        app:layout_constraintVertical_bias="0.907" />
+            android:textSize="18sp"
+            android:textStyle="bold" />
+    </androidx.core.widget.NestedScrollView>
 
     <Button
         android:id="@+id/btn_select_files"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
 
-        android:layout_marginBottom="40dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/choose_video"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.492"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.25" />
 
-        android:text="choose"
+    <Button
+        android:id="@+id/btn_merge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="@string/merge_video"
         app:layout_constraintBottom_toTopOf="@+id/btn_clear_files"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/nestedScrollView" />
 
     <Button
         android:id="@+id/btn_clear_files"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="100dp"
-        android:text="clear"
+        android:layout_marginBottom="8dp"
+        android:text="@string/clear_list"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/nestedScrollView"
+        app:layout_constraintVertical_bias="0.36" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">NearbyVideorec</string>
+    <string name="app_name">NearbyVideoRec</string>
     <string name="title_client">Client</string>
     <string name="title_server">Server</string>
     <string name="title_video">Video</string>
@@ -30,4 +30,11 @@
     <string name="permissions_denied">Permissions denied</string>
     <string name="no_device_selected">No device selected</string>
     <string name="recording_ongoing">Cannot become server during recording</string>
+    <string name="merge_success">Videos merged</string>
+    <string name="merge_cancel">Merge cancelled</string>
+    <string name="merge_not_found">Select at least one video</string>
+    <string name="no_file_selected">No file selected</string>
+    <string name="merge_video">Merge video</string>
+    <string name="choose_video">Choose video</string>
+    <string name="clear_list">Clear list</string>
 </resources>
