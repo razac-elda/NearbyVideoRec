@@ -86,7 +86,7 @@ public class VideoFragment extends Fragment {
 
         btn_choose_files.setOnClickListener(choose_OnClickListener);
         btn_merge.setOnClickListener(merge_OnClickListener);
-        btn_clear_files.setOnClickListener(choose_OnClickListener);
+        btn_clear_files.setOnClickListener(clear_OnClickListener);
 
         return root;
 
