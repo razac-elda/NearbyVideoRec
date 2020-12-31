@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Toast;
@@ -42,9 +41,9 @@ import com.otaliastudios.cameraview.CameraView;
 import com.otaliastudios.cameraview.VideoResult;
 import com.otaliastudios.cameraview.controls.Engine;
 import com.otaliastudios.cameraview.controls.Mode;
+
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
@@ -469,11 +468,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void openMyFolder() {
 
-        Intent fileChooser = new Intent(Intent.ACTION_GET_CONTENT);
+        Intent fileChooser = new Intent(Intent.ACTION_OPEN_DOCUMENT);
 
-        folderUri = Uri.parse(Environment.getExternalStorageDirectory().getAbsolutePath()
-                + File.separator + Environment.DIRECTORY_MOVIES + File.separator);
-        fileChooser.setDataAndType(folderUri, "video/mp4");
+        fileChooser.setType("video/mp4");
         fileChooser.addCategory(Intent.CATEGORY_OPENABLE);
         fileChooser = Intent.createChooser(fileChooser, "Open folder");
 

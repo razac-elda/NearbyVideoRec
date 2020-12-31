@@ -86,6 +86,7 @@ public final class Utils {
     }
 
     public static void createTextFile(ArrayList<String> pathList) throws IOException {
+
         String directory = Environment.getExternalStorageDirectory().getAbsolutePath() +
                 File.separator + Environment.DIRECTORY_MOVIES + File.separator + "NearbyVideoRec";
 
