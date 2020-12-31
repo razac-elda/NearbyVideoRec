@@ -1,4 +1,4 @@
-package com.example.nearbyvideorec.ui.video;
+package it.snasaunive.nearbyvideorec.ui.video;
 
 
 import android.os.Bundle;
@@ -12,13 +12,13 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.nearbyvideorec.MainActivity;
-import com.example.nearbyvideorec.R;
-import com.example.nearbyvideorec.SavedUIData;
-import com.example.nearbyvideorec.Utils;
-
 import java.io.IOException;
 import java.util.ArrayList;
+
+import it.snasaunive.nearbyvideorec.MainActivity;
+import it.snasaunive.nearbyvideorec.R;
+import it.snasaunive.nearbyvideorec.SavedUIData;
+import it.snasaunive.nearbyvideorec.Utils;
 
 public class VideoFragment extends Fragment {
 

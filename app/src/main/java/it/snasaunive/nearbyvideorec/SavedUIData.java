@@ -1,4 +1,4 @@
-package com.example.nearbyvideorec;
+package it.snasaunive.nearbyvideorec;
 
 
 // Singleton-enum pattern is the suggested implementation of a Singleton nowadays.

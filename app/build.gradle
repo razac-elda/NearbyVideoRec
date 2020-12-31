@@ -7,7 +7,7 @@ android {
     buildToolsVersion "30.0.2"
 
     defaultConfig {
-        applicationId "com.example.nearbyvideorec"
+        applicationId "it.snasaunive.nearbyvideorec"
         minSdkVersion 24
         targetSdkVersion 29
         versionCode 1

@@ -1,4 +1,4 @@
-package com.example.nearbyvideorec;
+package it.snasaunive.nearbyvideorec;
 
 
 import android.content.ContentResolver;
@@ -42,7 +42,6 @@ import com.otaliastudios.cameraview.CameraView;
 import com.otaliastudios.cameraview.VideoResult;
 import com.otaliastudios.cameraview.controls.Engine;
 import com.otaliastudios.cameraview.controls.Mode;
-
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;

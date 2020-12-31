@@ -1,4 +1,4 @@
-package com.example.nearbyvideorec.ui.client;
+package it.snasaunive.nearbyvideorec.ui.client;
 
 import androidx.lifecycle.ViewModel;
 

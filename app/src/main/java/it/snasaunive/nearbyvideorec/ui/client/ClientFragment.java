@@ -1,4 +1,4 @@
-package com.example.nearbyvideorec.ui.client;
+package it.snasaunive.nearbyvideorec.ui.client;
 
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
@@ -14,13 +14,14 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.example.nearbyvideorec.MainActivity;
-import com.example.nearbyvideorec.R;
-import com.example.nearbyvideorec.SavedUIData;
 import com.google.android.gms.nearby.connection.ConnectionInfo;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.util.HashMap;
+
+import it.snasaunive.nearbyvideorec.MainActivity;
+import it.snasaunive.nearbyvideorec.R;
+import it.snasaunive.nearbyvideorec.SavedUIData;
 
 public class ClientFragment extends Fragment {
 

@@ -1,4 +1,4 @@
-package com.example.nearbyvideorec;
+package it.snasaunive.nearbyvideorec;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
