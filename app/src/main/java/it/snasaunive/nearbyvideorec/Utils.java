@@ -139,7 +139,6 @@ public final class Utils {
 
         switch (result) {
             case RETURN_CODE_SUCCESS:
-                textFile.delete();
                 Toast.makeText(context, R.string.merge_success, Toast.LENGTH_SHORT).show();
                 break;
             case RETURN_CODE_CANCEL:
@@ -149,6 +148,7 @@ public final class Utils {
                 Toast.makeText(context, R.string.merge_not_found, Toast.LENGTH_SHORT).show();
                 break;
         }
+        textFile.delete();
     }
 
     public static String getPathFromURI(Context context, Uri uri) {
@@ -158,7 +158,7 @@ public final class Utils {
             if (isExternalStorageDocument(uri)) {
                 String docId = DocumentsContract.getDocumentId(uri);
                 String[] split = docId.split(":");
-                return Environment.getExternalStorageDirectory() + "/" + split[1];
+                return Environment.getExternalStorageDirectory() + File.separator + split[1];
             } else if (isDownloadsDocument(uri)) {
                 String id = DocumentsContract.getDocumentId(uri);
                 uri = ContentUris.withAppendedId(

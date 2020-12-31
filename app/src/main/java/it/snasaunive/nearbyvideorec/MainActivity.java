@@ -44,6 +44,7 @@ import com.otaliastudios.cameraview.controls.Mode;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
@@ -488,7 +489,7 @@ public class MainActivity extends AppCompatActivity {
                 path = Utils.TakePathFromURIOldDevice(uri);
             }
             pathList.add(path);
-            int lastIndex = path.lastIndexOf("/");
+            int lastIndex = path.lastIndexOf(File.separator);
             if (lastIndex != -1)
                 fileNames.add(path.substring(lastIndex + 1));
             navController.navigate(R.id.navigation_video);
