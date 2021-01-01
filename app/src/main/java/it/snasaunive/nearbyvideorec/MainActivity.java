@@ -1,6 +1,7 @@
 package it.snasaunive.nearbyvideorec;
 
 
+import android.app.Dialog;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -10,7 +11,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -75,7 +77,10 @@ public class MainActivity extends AppCompatActivity {
     private final Integer REQUEST_CODE_BY_INTENT_FILE_CHOOSER = 2048;
 
     private CameraView camera;
+    private CameraListener cameraListener;
+    private Boolean legacy;
     private ContentResolver resolver;
+    private Dialog cameraPreview;
     private Uri uriSavedVideo;
 
     @Override
@@ -88,6 +93,8 @@ public class MainActivity extends AppCompatActivity {
         connectedEndpoints = new HashMap<>();
         pathList = new ArrayList<>();
         fileNames = new ArrayList<>();
+        legacy = Utils.checkCameraAPI(context);
+        cameraPreview = null;
 
         setContentView(R.layout.activity_main);
 
@@ -103,15 +110,7 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
 
-        camera = findViewById(R.id.camera);
-
-        if (Utils.checkCameraAPI(context)) {
-            camera.setExperimental(false);
-            camera.setEngine(Engine.CAMERA1);
-        }
-
-        camera.setLifecycleOwner(this);
-        camera.addCameraListener(new CameraListener() {
+        cameraListener = new CameraListener() {
             @Override
             public void onVideoTaken(@NonNull VideoResult result) {
                 if (Build.VERSION.SDK_INT >= 29) {
@@ -122,11 +121,7 @@ public class MainActivity extends AppCompatActivity {
                     resolver.update(uriSavedVideo, fileDetails, null, null);
                 }
             }
-        });
-        camera.setMode(Mode.VIDEO);
-        camera.close();
-
-
+        };
     }
 
     public HashMap<String, ConnectionInfo> getConnectedEndpoints() {
@@ -382,7 +377,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
 
                     case "start_rec":
-
+                        setCameraPreview();
                         FileDescriptor videoFileDescriptor = null;
                         try {
                             videoFileDescriptor = Utils.createVideoFile(context);
@@ -390,16 +385,16 @@ public class MainActivity extends AppCompatActivity {
                             e.printStackTrace();
                         }
                         camera.open();
-                        camera.setVisibility(View.VISIBLE);
                         if (videoFileDescriptor != null)
                             camera.takeVideo(videoFileDescriptor);
                         break;
 
                     case "stop_rec":
-
                         camera.stopVideo();
-                        camera.setVisibility(View.INVISIBLE);
                         camera.close();
+                        camera.removeCameraListener(cameraListener);
+                        camera.destroy();
+                        cameraPreview.dismiss();
                         break;
 
                     default:
@@ -509,6 +504,31 @@ public class MainActivity extends AppCompatActivity {
         pathList.clear();
         fileNames.clear();
         navController.navigate(R.id.navigation_video);
+    }
+
+    private void setCameraPreview() {
+        if (cameraPreview != null) {
+            if (cameraPreview.isShowing()) {
+                cameraPreview.dismiss();
+            }
+            cameraPreview = null;
+        }
+        cameraPreview = new Dialog(activity_context);
+        cameraPreview.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        cameraPreview.setContentView(R.layout.dialog_camerapreview);
+        cameraPreview.setCancelable(false);
+        cameraPreview.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
+
+        camera = cameraPreview.findViewById(R.id.camerapreview);
+        if (legacy) {
+            camera.setExperimental(false);
+            camera.setEngine(Engine.CAMERA1);
+        }
+
+        camera.addCameraListener(cameraListener);
+
+        camera.setMode(Mode.VIDEO);
+        cameraPreview.show();
     }
 
 }
