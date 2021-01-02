@@ -1,8 +1,6 @@
 package it.snasaunive.nearbyvideorec;
 
 
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,7 +8,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Toast;
 
@@ -20,6 +17,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
@@ -37,15 +35,10 @@ import com.google.android.gms.nearby.connection.PayloadCallback;
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate;
 import com.google.android.gms.nearby.connection.Strategy;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.otaliastudios.cameraview.CameraListener;
-import com.otaliastudios.cameraview.CameraView;
-import com.otaliastudios.cameraview.VideoResult;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -72,10 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<String> fileNames;
     private Uri folderUri;
 
-    private CameraView camera;
-    private CameraListener cameraListener;
-    private ContentResolver resolver;
-    private Uri uriSavedVideo;
+    private CameraPreview cameraPreview;
 
     private final Integer REQUEST_CODE_BY_INTENT_FILE_CHOOSER = 2048;
 
@@ -89,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
         connectedEndpoints = new HashMap<>();
         pathList = new ArrayList<>();
         fileNames = new ArrayList<>();
+        cameraPreview = null;
 
         setContentView(R.layout.activity_main);
 
@@ -104,31 +95,11 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
 
-        cameraListener = new CameraListener() {
-            @Override
-            public void onVideoTaken(@NonNull VideoResult result) {
-                if (Build.VERSION.SDK_INT >= 29) {
-                    uriSavedVideo = Utils.getUriSavedVideo();
-                    resolver = Utils.getResolver();
-                    ContentValues fileDetails = new ContentValues();
-                    fileDetails.put(MediaStore.Video.Media.IS_PENDING, 0);
-                    resolver.update(uriSavedVideo, fileDetails, null, null);
-                }
-            }
-        };
 
     }
 
     public HashMap<String, ConnectionInfo> getConnectedEndpoints() {
         return connectedEndpoints;
-    }
-
-    public void setCamera(CameraView camera){
-        this.camera = camera;
-    }
-
-    public CameraListener getCameraListener(){
-        return cameraListener;
     }
 
     public void requestConnect(String caller) {
@@ -382,35 +353,24 @@ public class MainActivity extends AppCompatActivity {
                     case "start_rec":
                         navController.navigate(R.id.navigation_preview);
                         navView.setVisibility(View.INVISIBLE);
-                        FileDescriptor videoFileDescriptor = null;
-                        try {
-                            videoFileDescriptor = Utils.createVideoFile(context);
-                        } catch (FileNotFoundException e) {
-                            e.printStackTrace();
-                        }
-                        if (videoFileDescriptor != null){
-                            final Handler handler = new Handler();
-                            FileDescriptor finalVideoFileDescriptor = videoFileDescriptor;
-                            handler.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    camera.open();
-                                    camera.takeVideo(finalVideoFileDescriptor);
-                                }
-                            }, 1000);
-                        }
+                        final Handler starterHandler = new Handler();
+                        starterHandler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                NavHostFragment navHostFragment =
+                                        (NavHostFragment) getSupportFragmentManager().
+                                                findFragmentById(R.id.nav_host_fragment);
+                                cameraPreview = (CameraPreview) navHostFragment.
+                                        getChildFragmentManager().getFragments().get(0);
+                                if (cameraPreview != null)
+                                    cameraPreview.startRec();
+                            }
+                        }, 1000);
                         break;
 
                     case "stop_rec":
-                        camera.stopVideo();
-                        final Handler handler2 = new Handler();
-                        handler2.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                camera.close();
-                                camera.destroy();
-                            }
-                        }, 1000);
+                        if (cameraPreview != null)
+                            cameraPreview.stopRec();
                         navController.navigate(R.id.navigation_client);
                         navView.setVisibility(View.VISIBLE);
                         break;

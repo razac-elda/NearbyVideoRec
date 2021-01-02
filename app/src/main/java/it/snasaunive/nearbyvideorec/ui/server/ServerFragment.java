@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -112,7 +113,13 @@ public class ServerFragment extends Fragment {
                     if (connectedDevices.get(key).getEndpointName().equals(device)) {
                         ((MainActivity) requireActivity()).sendMessage(key, "start_rec");
                         btn_start.setEnabled(false);
-                        btn_stop.setEnabled(true);
+                        final Handler starterHandler = new Handler();
+                        starterHandler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                btn_stop.setEnabled(true);
+                            }
+                        }, 2500);
                         savedUIData.setRecording(true);
                     }
                 }
@@ -131,8 +138,15 @@ public class ServerFragment extends Fragment {
                 for (String key : connectedDevices.keySet()) {
                     if (connectedDevices.get(key).getEndpointName().equals(device)) {
                         ((MainActivity) requireActivity()).sendMessage(key, "stop_rec");
-                        btn_start.setEnabled(true);
                         btn_stop.setEnabled(false);
+                        final Handler starterHandler = new Handler();
+                        starterHandler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                btn_start.setEnabled(true);
+                            }
+                        }, 100);
+
                         savedUIData.setRecording(false);
                     }
                 }
