@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Toast;
@@ -39,8 +40,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.otaliastudios.cameraview.CameraListener;
 import com.otaliastudios.cameraview.CameraView;
 import com.otaliastudios.cameraview.VideoResult;
-import com.otaliastudios.cameraview.controls.Engine;
-import com.otaliastudios.cameraview.controls.Mode;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -54,6 +53,7 @@ import java.util.HashMap;
 public class MainActivity extends AppCompatActivity {
 
     private NavController navController;
+    private BottomNavigationView navView;
     /*
      * Singleton implemented with enum, used to save UI elements status when switching fragments.
      * Each fragment uses this singleton to obtain own UI element status, only if needed.
@@ -72,11 +72,12 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<String> fileNames;
     private Uri folderUri;
 
-    private final Integer REQUEST_CODE_BY_INTENT_FILE_CHOOSER = 2048;
-
     private CameraView camera;
+    private CameraListener cameraListener;
     private ContentResolver resolver;
     private Uri uriSavedVideo;
+
+    private final Integer REQUEST_CODE_BY_INTENT_FILE_CHOOSER = 2048;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,9 +94,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Singleton created for the first and only time.
         savedUIData = SavedUIData.INSTANCE;
-        BottomNavigationView navView = findViewById(R.id.nav_view);
+        navView = findViewById(R.id.nav_view);
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.navigation_client, R.id.navigation_server, R.id.navigation_video)
+                R.id.navigation_client, R.id.navigation_server, R.id.navigation_video, R.id.navigation_preview)
                 .build();
 
         // Later we use the navController to refresh the fragment
@@ -103,15 +104,7 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
 
-        camera = findViewById(R.id.camera);
-
-        if (Utils.checkCameraAPI(context)) {
-            camera.setExperimental(false);
-            camera.setEngine(Engine.CAMERA1);
-        }
-
-        camera.setLifecycleOwner(this);
-        camera.addCameraListener(new CameraListener() {
+        cameraListener = new CameraListener() {
             @Override
             public void onVideoTaken(@NonNull VideoResult result) {
                 if (Build.VERSION.SDK_INT >= 29) {
@@ -122,15 +115,20 @@ public class MainActivity extends AppCompatActivity {
                     resolver.update(uriSavedVideo, fileDetails, null, null);
                 }
             }
-        });
-        camera.setMode(Mode.VIDEO);
-        camera.close();
-
+        };
 
     }
 
     public HashMap<String, ConnectionInfo> getConnectedEndpoints() {
         return connectedEndpoints;
+    }
+
+    public void setCamera(CameraView camera){
+        this.camera = camera;
+    }
+
+    public CameraListener getCameraListener(){
+        return cameraListener;
     }
 
     public void requestConnect(String caller) {
@@ -382,24 +380,39 @@ public class MainActivity extends AppCompatActivity {
                         break;
 
                     case "start_rec":
-
+                        navController.navigate(R.id.navigation_preview);
+                        navView.setVisibility(View.INVISIBLE);
                         FileDescriptor videoFileDescriptor = null;
                         try {
                             videoFileDescriptor = Utils.createVideoFile(context);
                         } catch (FileNotFoundException e) {
                             e.printStackTrace();
                         }
-                        camera.open();
-                        camera.setVisibility(View.VISIBLE);
-                        if (videoFileDescriptor != null)
-                            camera.takeVideo(videoFileDescriptor);
+                        if (videoFileDescriptor != null){
+                            final Handler handler = new Handler();
+                            FileDescriptor finalVideoFileDescriptor = videoFileDescriptor;
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    camera.open();
+                                    camera.takeVideo(finalVideoFileDescriptor);
+                                }
+                            }, 1000);
+                        }
                         break;
 
                     case "stop_rec":
-
                         camera.stopVideo();
-                        camera.setVisibility(View.INVISIBLE);
-                        camera.close();
+                        final Handler handler2 = new Handler();
+                        handler2.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                camera.close();
+                                camera.destroy();
+                            }
+                        }, 1000);
+                        navController.navigate(R.id.navigation_client);
+                        navView.setVisibility(View.VISIBLE);
                         break;
 
                     default:

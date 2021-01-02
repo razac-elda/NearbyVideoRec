@@ -22,4 +22,10 @@
         android:name="it.snasaunive.nearbyvideorec.ui.video.VideoFragment"
         android:label="@string/title_video"
         tools:layout="@layout/fragment_video" />
+
+    <fragment
+        android:id="@+id/navigation_preview"
+        android:name="it.snasaunive.nearbyvideorec.CameraPreview"
+        android:label="Camera"
+        tools:layout="@layout/fragment_camera_preview" />
 </navigation>
