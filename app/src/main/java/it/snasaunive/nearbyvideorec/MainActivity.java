@@ -448,7 +448,7 @@ public class MainActivity extends AppCompatActivity {
         fileChooser.addCategory(Intent.CATEGORY_OPENABLE);
         fileChooser = Intent.createChooser(fileChooser, "Open folder");
 
-        if (fileChooser.resolveActivityInfo(context.getPackageManager(), 0) != null)
+        if (fileChooser.resolveActivity(context.getPackageManager()) != null)
             startActivityForResult(fileChooser, REQUEST_CODE_BY_INTENT_FILE_CHOOSER);
     }
 

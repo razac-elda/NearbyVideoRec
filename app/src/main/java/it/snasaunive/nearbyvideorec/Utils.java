@@ -16,6 +16,7 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.widget.Toast;
 
+import com.arthenica.mobileffmpeg.ExecuteCallback;
 import com.arthenica.mobileffmpeg.FFmpeg;
 
 import java.io.File;
@@ -86,21 +87,16 @@ public final class Utils {
         return resolver.openFileDescriptor(uriSavedVideo, "w").getFileDescriptor();
     }
 
-    public static void createTextFile(Context context, ArrayList<String> pathList) throws IOException {
+    private static File createTextFile(Context context, ArrayList<String> pathList) throws IOException {
 
-        /*String directory = Environment.getExternalStorageDirectory().getAbsolutePath() +
-                File.separator + Environment.DIRECTORY_MOVIES + File.separator + "NearbyVideoRec";
-
-        File newDirectory = new File(directory);
-        if (!newDirectory.exists())
-            newDirectory.mkdirs();
-        */
         File textFile = new File(context.getExternalFilesDir(null), "pathList.txt");
         FileWriter writer = new FileWriter(textFile);
         for (String path : pathList)
             writer.write("file '" + path + "'" + System.lineSeparator());
         writer.flush();
         writer.close();
+
+        return textFile;
     }
 
     public static boolean checkCameraAPI(Context context) {
@@ -127,32 +123,35 @@ public final class Utils {
         return legacy;
     }
 
-    public static void mergeVideo(Context context) {
-
+    public static void mergeVideo(Context context, ArrayList<String> pathList) throws IOException {
         String fileOutputName = "merged_" + Utils.getTimeStampString() + ".mp4";
         String directory = Environment.getExternalStorageDirectory().getAbsolutePath() +
                 File.separator + Environment.DIRECTORY_MOVIES + File.separator + "NearbyVideoRec" + File.separator;
 
+        File textFile = createTextFile(context, pathList);
+
         File newDirectory = new File(directory);
         if (!newDirectory.exists())
             newDirectory.mkdirs();
-        File textFile = new File(context.getExternalFilesDir(null), "pathList.txt");
+
         String cmd = "-f concat -safe 0 -i " + textFile.getAbsolutePath() + " -c:v copy -c:a aac " + directory + fileOutputName;
-
-        int result = FFmpeg.execute(cmd);
-
-        switch (result) {
-            case RETURN_CODE_SUCCESS:
-                Toast.makeText(context, R.string.merge_success, Toast.LENGTH_SHORT).show();
-                break;
-            case RETURN_CODE_CANCEL:
-                Toast.makeText(context, R.string.merge_cancel, Toast.LENGTH_SHORT).show();
-                break;
-            default:
-                Toast.makeText(context, R.string.merge_not_found, Toast.LENGTH_SHORT).show();
-                break;
-        }
-        textFile.delete();
+        FFmpeg.executeAsync(cmd, new ExecuteCallback() {
+            @Override
+            public void apply(long executionId, int returnCode) {
+                switch (returnCode) {
+                    case RETURN_CODE_SUCCESS:
+                        Toast.makeText(context, R.string.merge_success, Toast.LENGTH_SHORT).show();
+                        break;
+                    case RETURN_CODE_CANCEL:
+                        Toast.makeText(context, R.string.merge_cancel, Toast.LENGTH_SHORT).show();
+                        break;
+                    default:
+                        Toast.makeText(context, R.string.merge_not_found, Toast.LENGTH_SHORT).show();
+                        break;
+                }
+                textFile.delete();
+            }
+        });
     }
 
     public static String getPathFromURI(Context context, Uri uri) {
@@ -162,7 +161,21 @@ public final class Utils {
             if (isExternalStorageDocument(uri)) {
                 String docId = DocumentsContract.getDocumentId(uri);
                 String[] split = docId.split(":");
-                return Environment.getExternalStorageDirectory() + File.separator + split[1];
+                String type = split[0];
+                if (type.contains("primary")) {
+                    return Environment.getExternalStorageDirectory() + "/" + split[1];
+                } else {
+                    String filePath = null;
+                    File[] external = context.getExternalMediaDirs();
+                    for (File f : external) {
+                        filePath = f.getAbsolutePath();
+                        if (filePath.contains(type)) {
+                            int endIndex = filePath.indexOf("Android");
+                            filePath = filePath.substring(0, endIndex) + split[1];
+                        }
+                    }
+                    return filePath;
+                }
             } else if (isDownloadsDocument(uri)) {
                 String id = DocumentsContract.getDocumentId(uri);
                 uri = ContentUris.withAppendedId(

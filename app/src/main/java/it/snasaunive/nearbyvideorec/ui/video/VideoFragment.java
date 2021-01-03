@@ -59,11 +59,10 @@ public class VideoFragment extends Fragment {
         @Override
         public void onClick(View v) {
             try {
-                Utils.createTextFile(requireContext(), ((MainActivity) requireActivity()).getPathList());
+                Utils.mergeVideo(requireContext(), ((MainActivity) requireActivity()).getPathList());
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            Utils.mergeVideo(requireContext());
             ((MainActivity) requireActivity()).clearPaths();
         }
     };
