@@ -63,7 +63,6 @@ public class MainActivity extends AppCompatActivity {
     private HashMap<String, ConnectionInfo> connectedEndpoints;
     private ArrayList<String> pathList;
     private ArrayList<String> fileNames;
-    private Uri folderUri;
 
     private CameraPreview cameraPreview;
 
@@ -484,4 +483,14 @@ public class MainActivity extends AppCompatActivity {
         navController.navigate(R.id.navigation_video);
     }
 
+    @Override
+    public void onBackPressed() {
+        new AlertDialog.Builder(activity_context, R.style.Theme_ConnectionDialog)
+                .setTitle(getString(R.string.exit_app))
+                .setMessage(getString(R.string.exit_app_text))
+                .setPositiveButton(getString(R.string.ok), (DialogInterface dialog, int which) -> finish())
+                .setNegativeButton(getString(R.string.cancel), null)
+                .setIcon(R.drawable.ic_baseline_warning)
+                .show();
+    }
 }
