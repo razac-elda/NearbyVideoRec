@@ -247,13 +247,15 @@ public class MainActivity extends AppCompatActivity {
                         case ConnectionsStatusCodes.STATUS_CONNECTION_REJECTED:
                             // The connection was rejected by one or both sides.
 
-                            Toast.makeText(activity_context, getString(R.string.connection_rejected), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(activity_context, getString(R.string.connection_rejected),
+                                    Toast.LENGTH_SHORT).show();
                             break;
 
                         case ConnectionsStatusCodes.STATUS_ERROR:
                             // The connection broke before it was able to be accepted.
 
-                            Toast.makeText(activity_context, getString(R.string.connection_error), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(activity_context, getString(R.string.connection_error),
+                                    Toast.LENGTH_SHORT).show();
                             break;
 
                         default:
@@ -382,7 +384,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onPayloadTransferUpdate(@NonNull String endpointId, @NonNull PayloadTransferUpdate payloadTransferUpdate) {
+        public void onPayloadTransferUpdate(@NonNull String endpointId,
+                                            @NonNull PayloadTransferUpdate payloadTransferUpdate) {
             // Used with files payload to keep tracking of the transfer
         }
     };

@@ -121,7 +121,8 @@ public class VideoFragment extends Fragment {
 
     // Called after "requestPermissions", check if all permissions were accepted
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
 
         if (requestCode == REQUEST_PERMISSIONS_CODE) {
             if (allPermissionsGranted()) {

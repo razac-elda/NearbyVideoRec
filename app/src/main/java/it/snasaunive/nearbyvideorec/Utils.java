@@ -134,7 +134,8 @@ public final class Utils {
         if (!newDirectory.exists())
             newDirectory.mkdirs();
 
-        String cmd = "-f concat -safe 0 -i " + textFile.getAbsolutePath() + " -c:v copy -c:a aac " + directory + fileOutputName;
+        String cmd =
+                "-f concat -safe 0 -i " + textFile.getAbsolutePath() + " -c:v copy -c:a aac " + directory + fileOutputName;
         FFmpeg.executeAsync(cmd, new ExecuteCallback() {
             @Override
             public void apply(long executionId, int returnCode) {
