@@ -9,15 +9,14 @@ public enum SavedUIData {
     private Boolean client_status_switch;
     private Boolean server_status_switch;
     private Boolean recording;
-    private String client_connection_status;
+    private String recording_device;
 
     // Initial status for each element when fragment is created for the first time.
     SavedUIData() {
         client_status_switch = false;
         server_status_switch = false;
         recording = false;
-        client_connection_status = "Not connected";
-
+        recording_device = "None";
     }
 
     // Getter and Setters for all the elements.
@@ -46,4 +45,11 @@ public enum SavedUIData {
         this.recording = recording;
     }
 
+    public void setRecording_device(String recording_device){
+        this.recording_device = recording_device;
+    }
+
+    public String getRecording_device(){
+        return recording_device;
+    }
 }

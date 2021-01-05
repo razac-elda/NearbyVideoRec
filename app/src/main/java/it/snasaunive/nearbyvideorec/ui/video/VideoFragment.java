@@ -58,14 +58,14 @@ public class VideoFragment extends Fragment {
         @Override
         public void onClick(View v) {
             Utils.mergeVideo(requireContext(), ((MainActivity) requireActivity()).getInputFiles(), "1280x720", "30");
-            ((MainActivity) requireActivity()).clearCmd();
+            ((MainActivity) requireActivity()).clearFilesPath();
         }
     };
 
     private final View.OnClickListener clear_OnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            ((MainActivity) requireActivity()).clearCmd();
+            ((MainActivity) requireActivity()).clearFilesPath();
         }
     };
 

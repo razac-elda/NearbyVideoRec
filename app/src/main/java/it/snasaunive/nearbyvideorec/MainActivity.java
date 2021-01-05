@@ -84,11 +84,11 @@ public class MainActivity extends AppCompatActivity {
 
         // Singleton created for the first and only time.
         savedUIData = SavedUIData.INSTANCE;
+
         navView = findViewById(R.id.nav_view);
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.navigation_client, R.id.navigation_server, R.id.navigation_video, R.id.navigation_preview)
                 .build();
-
         // Later we use the navController to refresh the fragment
         navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
@@ -97,10 +97,11 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    // When client/server switch is turned on
     public void requestConnect(String caller) {
 
         if (caller.equals("CLIENT")) {
-
+            // Caller is CLIENT, check if it's also active as server
             if (!savedUIData.getServer_status_switch()) {
                 deviceRole = "Client";
                 startDiscovery();
@@ -128,13 +129,6 @@ public class MainActivity extends AppCompatActivity {
                 // Get Server ID, only one entry on connectedEndpoints when acting as Client
                 for (String endpoint : connectedEndpoints.keySet())
                     endpointId = endpoint;
-
-                /*
-                 * TODO:Need to confirm new connection, not seamless
-                 * Idea:Send to other devices a request to switch off-on discovery without
-                 * disconnecting. Maybe send new Server endpointId and connect with requestConnection
-                 * Unknown:Connection needs to authenticate again?
-                 */
                 sendMessage(endpointId, "swap_client_server");
 
             } else {
@@ -146,6 +140,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // When client/server switch is turned off
     public void requestDisconnect(String caller) {
 
         if (caller.equals("CLIENT")) {
@@ -167,13 +162,25 @@ public class MainActivity extends AppCompatActivity {
         connectedEndpoints.clear();
     }
 
-
-    public void clearCmd() {
+    // Called to clear selected files related data for merging
+    public void clearFilesPath() {
         inputFiles.clear();
         fileNames.clear();
         navController.navigate(R.id.navigation_video);
     }
 
+    public void sendMessage(String endpointId, String msg) {
+
+        if (endpointId != null) {
+            // Convert the message to Bytes
+            byte[] bytes = msg.getBytes(StandardCharsets.UTF_8);
+            // Generate payload and send it to destination
+            Payload bytesPayload = Payload.fromBytes(bytes);
+            Nearby.getConnectionsClient(context).sendPayload(endpointId, bytesPayload);
+        }
+    }
+
+    // Smartphone manufacturer and model
     private String getUserNickname() {
         return Build.MANUFACTURER.toUpperCase() + " " + Build.MODEL;
     }
@@ -281,6 +288,8 @@ public class MainActivity extends AppCompatActivity {
                                 + " " + endpointInfo.getEndpointName(), Toast.LENGTH_LONG).show();
                         // Remove old endpoint
                         connectedEndpoints.remove(endpointId);
+                        if (endpointInfo.getEndpointName().equals(savedUIData.getRecording_device()))
+                            savedUIData.setRecording(false);
                         // Refresh fragments
                         if (deviceRole.equals("Client"))
                             navController.navigate(R.id.navigation_client);
@@ -290,17 +299,6 @@ public class MainActivity extends AppCompatActivity {
                 }
 
             };
-
-    public void sendMessage(String endpointId, String msg) {
-
-        if (endpointId != null) {
-            // Convert the message to Bytes
-            byte[] bytes = msg.getBytes(StandardCharsets.UTF_8);
-            // Generate payload and send it to destination
-            Payload bytesPayload = Payload.fromBytes(bytes);
-            Nearby.getConnectionsClient(context).sendPayload(endpointId, bytesPayload);
-        }
-    }
 
     private PayloadCallback payloadCallback = new PayloadCallback() {
 
@@ -314,12 +312,6 @@ public class MainActivity extends AppCompatActivity {
 
                     case "swap_client_server":
                         // Request to change Server
-                        /*
-                         * TODO:Only working with two devices, need to update for multi device.
-                         * Idea:Send to other devices a request to switch off-on discovery without
-                         * disconnecting. Maybe send new Server endpointId and connect with requestConnection
-                         * Unknown:Connection needs to authenticate again?
-                         */
                         if (!savedUIData.getRecording()) {
                             sendMessage(endpointId, "allow_swap");
                             for (String endpoint : connectedEndpoints.keySet()) {

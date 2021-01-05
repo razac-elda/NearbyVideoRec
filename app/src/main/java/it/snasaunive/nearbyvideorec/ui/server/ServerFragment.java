@@ -108,11 +108,16 @@ public class ServerFragment extends Fragment {
         @Override
         public void onClick(View v) {
             String device = tv_selected_device.getText().toString();
+
             if (!device.equals("No device selected")) {
+
                 for (String key : connectedDevices.keySet()) {
                     if (connectedDevices.get(key).getEndpointName().equals(device)) {
+
+                        savedUIData.setRecording_device(device);
                         ((MainActivity) requireActivity()).sendMessage(key, "start_rec");
                         btn_start.setEnabled(false);
+
                         final Handler starterHandler = new Handler();
                         starterHandler.postDelayed(new Runnable() {
                             @Override
@@ -120,6 +125,7 @@ public class ServerFragment extends Fragment {
                                 btn_stop.setEnabled(true);
                             }
                         }, 2500);
+
                         savedUIData.setRecording(true);
                     }
                 }
@@ -146,7 +152,7 @@ public class ServerFragment extends Fragment {
                                 btn_start.setEnabled(true);
                             }
                         }, 100);
-
+                        savedUIData.setRecording_device("None");
                         savedUIData.setRecording(false);
                     }
                 }
