@@ -97,10 +97,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public HashMap<String, ConnectionInfo> getConnectedEndpoints() {
-        return connectedEndpoints;
-    }
-
     public void requestConnect(String caller) {
 
         if (caller.equals("CLIENT")) {
@@ -169,6 +165,13 @@ public class MainActivity extends AppCompatActivity {
         Nearby.getConnectionsClient(context).stopAllEndpoints();
         // Clear connected endpoints
         connectedEndpoints.clear();
+    }
+
+
+    public void clearCmd() {
+        inputFiles.clear();
+        fileNames.clear();
+        navController.navigate(R.id.navigation_video);
     }
 
     private String getUserNickname() {
@@ -434,14 +437,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             };
 
-    public ArrayList<String> getInputFiles() {
-        return inputFiles;
-    }
-
-    public ArrayList<String> getFileNames() {
-        return fileNames;
-    }
-
     public void openMyFolder() {
 
         Intent fileChooser = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -478,12 +473,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void clearCmd() {
-        inputFiles.clear();
-        fileNames.clear();
-        navController.navigate(R.id.navigation_video);
-    }
-
     @Override
     public void onBackPressed() {
         new AlertDialog.Builder(activity_context, R.style.Theme_ConnectionDialog)
@@ -494,4 +483,17 @@ public class MainActivity extends AppCompatActivity {
                 .setIcon(R.drawable.ic_baseline_warning)
                 .show();
     }
+
+    public HashMap<String, ConnectionInfo> getConnectedEndpoints() {
+        return connectedEndpoints;
+    }
+
+    public ArrayList<String> getInputFiles() {
+        return inputFiles;
+    }
+
+    public ArrayList<String> getFileNames() {
+        return fileNames;
+    }
+
 }
