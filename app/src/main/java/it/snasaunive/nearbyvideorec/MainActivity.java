@@ -43,6 +43,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import it.snasaunive.nearbyvideorec.ui.CameraPreview;
+
 public class MainActivity extends AppCompatActivity {
 
     private NavController navController;

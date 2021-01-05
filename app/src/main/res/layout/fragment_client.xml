@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="it.snasaunive.nearbyvideorec.ui.client.ClientFragment">
+    tools:context="it.snasaunive.nearbyvideorec.ui.ClientFragment">
 
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/client_status_switch"

@@ -1,4 +1,4 @@
-package it.snasaunive.nearbyvideorec;
+package it.snasaunive.nearbyvideorec.ui;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -22,6 +22,9 @@ import com.otaliastudios.cameraview.controls.Mode;
 
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
+
+import it.snasaunive.nearbyvideorec.R;
+import it.snasaunive.nearbyvideorec.Utils;
 
 public class CameraPreview extends Fragment {
 

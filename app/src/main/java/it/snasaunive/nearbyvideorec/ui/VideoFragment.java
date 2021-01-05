@@ -1,4 +1,4 @@
-package it.snasaunive.nearbyvideorec.ui.video;
+package it.snasaunive.nearbyvideorec.ui;
 
 
 import android.content.pm.PackageManager;
@@ -13,7 +13,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 
 import java.util.ArrayList;
 
@@ -30,7 +29,6 @@ public class VideoFragment extends Fragment {
             "android.permission.READ_EXTERNAL_STORAGE"
     };
 
-    private VideoViewModel videoViewModel;
     private SavedUIData savedUIData;
 
     private Button btn_merge;
@@ -71,7 +69,7 @@ public class VideoFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        videoViewModel = new ViewModelProvider(this).get(VideoViewModel.class);
+
         View root = inflater.inflate(R.layout.fragment_video, container, false);
         savedUIData = SavedUIData.INSTANCE;
 

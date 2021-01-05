@@ -1,4 +1,4 @@
-package it.snasaunive.nearbyvideorec.ui.client;
+package it.snasaunive.nearbyvideorec.ui;
 
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
@@ -13,7 +13,6 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.core.text.HtmlCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.gms.nearby.connection.ConnectionInfo;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -36,7 +35,6 @@ public class ClientFragment extends Fragment {
     };
     private View switchView;
 
-    private ClientViewModel clientViewModel;
     private SavedUIData savedUIData;
 
     private SwitchMaterial swc_status;
@@ -64,9 +62,6 @@ public class ClientFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-
-        clientViewModel =
-                new ViewModelProvider(this).get(ClientViewModel.class);
 
         View root = inflater.inflate(R.layout.fragment_client, container, false);
 

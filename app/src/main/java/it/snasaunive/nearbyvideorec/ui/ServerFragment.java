@@ -1,4 +1,4 @@
-package it.snasaunive.nearbyvideorec.ui.server;
+package it.snasaunive.nearbyvideorec.ui;
 
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
@@ -16,7 +16,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.gms.nearby.connection.ConnectionInfo;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -38,7 +37,6 @@ public class ServerFragment extends Fragment {
     };
     private View switchView;
 
-    private ServerViewModel serverViewModel;
     private SavedUIData savedUIData;
 
     private SwitchMaterial swc_status;
@@ -165,8 +163,6 @@ public class ServerFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
-        serverViewModel =
-                new ViewModelProvider(this).get(ServerViewModel.class);
         View root = inflater.inflate(R.layout.fragment_server, container, false);
         savedUIData = SavedUIData.INSTANCE;
 
