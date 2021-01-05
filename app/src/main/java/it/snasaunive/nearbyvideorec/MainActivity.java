@@ -61,8 +61,8 @@ public class MainActivity extends AppCompatActivity {
     private Context activity_context;
     private String SERVICE_ID;
     private HashMap<String, ConnectionInfo> connectedEndpoints;
-    private ArrayList<String> pathList;
     private ArrayList<String> fileNames;
+    private ArrayList<String> inputFiles;
 
     private CameraPreview cameraPreview;
 
@@ -76,9 +76,9 @@ public class MainActivity extends AppCompatActivity {
         activity_context = MainActivity.this;
         SERVICE_ID = getPackageName();
         connectedEndpoints = new HashMap<>();
-        pathList = new ArrayList<>();
         fileNames = new ArrayList<>();
         cameraPreview = null;
+        inputFiles = new ArrayList<>();
 
         setContentView(R.layout.activity_main);
 
@@ -434,8 +434,8 @@ public class MainActivity extends AppCompatActivity {
                 }
             };
 
-    public ArrayList<String> getPathList() {
-        return pathList;
+    public ArrayList<String> getInputFiles() {
+        return inputFiles;
     }
 
     public ArrayList<String> getFileNames() {
@@ -460,14 +460,12 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_CODE_BY_INTENT_FILE_CHOOSER && resultCode == RESULT_OK && data != null) {
             Uri uri = data.getData();
             String path = Utils.getPathFromURI(context, uri);
-            /*if (path == null)
-                path = Utils.TakePathFromURIOldDevice(uri);
-            */
             if (path != null) {
-                pathList.add(path);
                 int lastIndex = path.lastIndexOf(File.separator);
-                if (lastIndex != -1)
+                if (lastIndex != -1) {
                     fileNames.add(path.substring(lastIndex + 1));
+                    inputFiles.add(path);
+                }
                 navController.navigate(R.id.navigation_video);
             } else {
                 new AlertDialog.Builder(activity_context, R.style.Theme_ConnectionDialog)
@@ -480,8 +478,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void clearPaths() {
-        pathList.clear();
+    public void clearCmd() {
+        inputFiles.clear();
         fileNames.clear();
         navController.navigate(R.id.navigation_video);
     }

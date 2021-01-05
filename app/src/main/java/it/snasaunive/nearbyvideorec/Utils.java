@@ -22,8 +22,6 @@ import com.arthenica.mobileffmpeg.FFmpeg;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
@@ -87,18 +85,6 @@ public final class Utils {
         return resolver.openFileDescriptor(uriSavedVideo, "w").getFileDescriptor();
     }
 
-    private static File createTextFile(Context context, ArrayList<String> pathList) throws IOException {
-
-        File textFile = new File(context.getExternalFilesDir(null), "pathList.txt");
-        FileWriter writer = new FileWriter(textFile);
-        for (String path : pathList)
-            writer.write("file '" + path + "'" + System.lineSeparator());
-        writer.flush();
-        writer.close();
-
-        return textFile;
-    }
-
     public static boolean checkCameraAPI(Context context) {
         // Check camera API level
         CameraManager manager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
@@ -123,19 +109,42 @@ public final class Utils {
         return legacy;
     }
 
-    public static void mergeVideo(Context context, ArrayList<String> pathList) throws IOException {
+    public static void mergeVideo(Context context, ArrayList<String> inputFiles, String res, String fps) {
         String fileOutputName = "merged_" + Utils.getTimeStampString() + ".mp4";
         String directory = Environment.getExternalStorageDirectory().getAbsolutePath() +
                 File.separator + Environment.DIRECTORY_MOVIES + File.separator + "NearbyVideoRec" + File.separator;
-
-        File textFile = createTextFile(context, pathList);
 
         File newDirectory = new File(directory);
         if (!newDirectory.exists())
             newDirectory.mkdirs();
 
+        /*
+         * ffmpeg -i input1.mp4 -i input2.webm -i input3.mov \
+         * -filter_complex "[0:v:0][0:a:0][1:v:0][1:a:0][2:v:0][2:a:0]concat=n=3:v=1:a=1[outv][outa]" \
+         * -s 1920x1080 -r 30 -codec:v libx264 -crf 24 -preset veryfast \
+         * -map "[outv]" -map "[outa]" output.mp4
+         */
+
+        StringBuilder files = new StringBuilder();
+        StringBuilder inputStream = new StringBuilder();
+        inputStream.append("-filter_complex \"");
+        int n_file = 0;
+        for (String file : inputFiles) {
+            files.append("-i ").append(file).append(" ");
+            inputStream.append("[").append(n_file).append(":v:0][").append(n_file).append(":a:0]");
+            n_file++;
+        }
+        inputStream.append("concat=n=").append(inputFiles.size()).append(":v=1:a=1[outv][outa]\" ");
+
+        String codec = "-codec:v libx264 -crf 24";
+        String preset = "-preset veryfast";
+
         String cmd =
-                "-f concat -safe 0 -i " + textFile.getAbsolutePath() + " -c:v copy -c:a aac " + directory + fileOutputName;
+                files.toString() +
+                inputStream.toString() +
+                "-s " + res + " -r " + fps + " " + codec + " " + preset + " " +
+                "-map \"[outv]\" " + "-map \"[outa]\" " + directory + fileOutputName;
+
         FFmpeg.executeAsync(cmd, new ExecuteCallback() {
             @Override
             public void apply(long executionId, int returnCode) {
@@ -150,7 +159,6 @@ public final class Utils {
                         Toast.makeText(context, R.string.merge_not_found, Toast.LENGTH_SHORT).show();
                         break;
                 }
-                textFile.delete();
             }
         });
     }
@@ -227,13 +235,4 @@ public final class Utils {
     private static boolean isMediaDocument(Uri uri) {
         return "com.android.providers.media.documents".equals(uri.getAuthority());
     }
-
-    /*
-    public static String TakePathFromURIOldDevice(Uri u) {
-        String uriString = u.toString();
-        String[] parts = uriString.split("/storage");
-        String storage = "/storage";
-        return storage.concat(parts[1]);
-    }
-    */
 }

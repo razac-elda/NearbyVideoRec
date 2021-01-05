@@ -15,7 +15,6 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import it.snasaunive.nearbyvideorec.MainActivity;
@@ -58,19 +57,15 @@ public class VideoFragment extends Fragment {
     private final View.OnClickListener merge_OnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            try {
-                Utils.mergeVideo(requireContext(), ((MainActivity) requireActivity()).getPathList());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            ((MainActivity) requireActivity()).clearPaths();
+            Utils.mergeVideo(requireContext(), ((MainActivity) requireActivity()).getInputFiles(), "1280x720", "30");
+            ((MainActivity) requireActivity()).clearCmd();
         }
     };
 
     private final View.OnClickListener clear_OnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            ((MainActivity) requireActivity()).clearPaths();
+            ((MainActivity) requireActivity()).clearCmd();
         }
     };
 
