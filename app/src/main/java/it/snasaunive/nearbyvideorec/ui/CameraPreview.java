@@ -35,11 +35,13 @@ public class CameraPreview extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         // Inflate the layout for this fragment
         View root = inflater.inflate(R.layout.fragment_camera_preview, container, false);
 
         camera = root.findViewById(R.id.camera);
 
+        // Set Camera1 API if device does not support Camera2.
         if (Utils.checkCameraAPI(requireContext())) {
             camera.setExperimental(false);
             camera.setEngine(Engine.CAMERA1);
@@ -47,10 +49,12 @@ public class CameraPreview extends Fragment {
 
         camera.setLifecycleOwner(getViewLifecycleOwner());
 
+        // Camera listener, when video is taken on Android 10+ we need to update IS_PENDING to 0.
         camera.addCameraListener(new CameraListener() {
             @Override
             public void onVideoTaken(@NonNull VideoResult result) {
                 if (Build.VERSION.SDK_INT >= 29) {
+                    // Uri and resolver were saved right after file was created.
                     uriSavedVideo = Utils.getUriSavedVideo();
                     resolver = Utils.getResolver();
                     ContentValues fileDetails = new ContentValues();
@@ -65,13 +69,16 @@ public class CameraPreview extends Fragment {
         return root;
     }
 
+    // Called from MainActivity.
     public void startRec() {
+        // Create FileDescriptor and give it to camera API.
         FileDescriptor videoFileDescriptor = null;
         try {
             videoFileDescriptor = Utils.createVideoFile(requireContext());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        // Small delay to ensure video file is created.
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
@@ -83,7 +90,9 @@ public class CameraPreview extends Fragment {
             camera.takeVideo(videoFileDescriptor);
     }
 
+    // Called from MainActivity
     public void stopRec() {
+        // Delay for a smoother animation.
         final Handler Handler = new Handler();
         Handler.postDelayed(new Runnable() {
             @Override

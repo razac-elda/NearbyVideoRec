@@ -33,6 +33,9 @@ public class ServerFragment extends Fragment {
     private final int REQUEST_PERMISSIONS_CODE = 2;
     private final String[] REQUIRED_PERMISSIONS = new String[]{
             "android.permission.ACCESS_FINE_LOCATION",
+            "android.permission.CAMERA",
+            "android.permission.RECORD_AUDIO",
+            "android.permission.WRITE_EXTERNAL_STORAGE",
             "android.permission.READ_EXTERNAL_STORAGE"
     };
     private View switchView;

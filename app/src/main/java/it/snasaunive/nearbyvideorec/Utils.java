@@ -54,7 +54,7 @@ public final class Utils {
         ContentValues valuesVideos = new ContentValues();
 
         if (Build.VERSION.SDK_INT >= 29) {
-
+            // Compatible with Android Scoped Storage
             Uri collection = MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
             valuesVideos.put(MediaStore.Video.Media.RELATIVE_PATH, Environment.DIRECTORY_MOVIES + "/NearbyVideoRec");
             valuesVideos.put(MediaStore.Video.Media.TITLE, videoFileName);
@@ -64,7 +64,7 @@ public final class Utils {
             uriSavedVideo = resolver.insert(collection, valuesVideos);
 
         } else {
-
+            // For legacy storage device
             String directory = Environment.getExternalStorageDirectory().getAbsolutePath() +
                     File.separator + Environment.DIRECTORY_MOVIES + File.separator + "NearbyVideoRec";
 
@@ -110,15 +110,17 @@ public final class Utils {
     }
 
     public static void mergeVideo(Context context, ArrayList<String> inputFiles, String res, String fps) {
+        // File name and path where it will be created.
         String fileOutputName = "merged_" + Utils.getTimeStampString() + ".mp4";
         String directory = Environment.getExternalStorageDirectory().getAbsolutePath() +
                 File.separator + Environment.DIRECTORY_MOVIES + File.separator + "NearbyVideoRec" + File.separator;
 
+        // Create directory if it does not exist.
         File newDirectory = new File(directory);
         if (!newDirectory.exists())
             newDirectory.mkdirs();
 
-        /*
+        /*  We use StringBuilder to create the FFmpeg command with this format:
          * ffmpeg -i input1.mp4 -i input2.webm -i input3.mov \
          * -filter_complex "[0:v:0][0:a:0][1:v:0][1:a:0][2:v:0][2:a:0]concat=n=3:v=1:a=1[outv][outa]" \
          * -s 1920x1080 -r 30 -codec:v libx264 -crf 24 -preset veryfast \
@@ -163,6 +165,7 @@ public final class Utils {
         });
     }
 
+    // Convert an Uri to an absolute path
     public static String getPathFromURI(Context context, Uri uri) {
         String selection = null;
         String[] selectionArgs = null;

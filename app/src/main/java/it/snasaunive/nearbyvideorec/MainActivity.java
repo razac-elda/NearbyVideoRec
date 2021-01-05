@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
      * Any element status that needs to be monitored during execution must be managed.
      */
     private SavedUIData savedUIData;
-    // Select strategy for nearby connection
+    // Select strategy for nearby connection.
     private static final Strategy STRATEGY = Strategy.P2P_STAR;
     private String deviceRole;
 
@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.navigation_client, R.id.navigation_server, R.id.navigation_video, R.id.navigation_preview)
                 .build();
-        // Later we use the navController to refresh the fragment
+        // Later we use the navController to refresh the fragment.
         navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(navView, navController);
@@ -99,11 +99,11 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    // When client/server switch is turned on
+    // When client/server switch is turned on.
     public void requestConnect(String caller) {
 
         if (caller.equals("CLIENT")) {
-            // Caller is CLIENT, check if it's also active as server
+            // Caller is CLIENT, check if it's also active as server.
             if (!savedUIData.getServer_status_switch()) {
                 deviceRole = "Client";
                 startDiscovery();
@@ -125,10 +125,10 @@ public class MainActivity extends AppCompatActivity {
 
             // Caller is SERVER
             if (savedUIData.getClient_status_switch()) {
-                // Caller is client and want to become a Server
+                // Caller is client and want to become a Server.
                 String endpointId = null;
 
-                // Get Server ID, only one entry on connectedEndpoints when acting as Client
+                // Get Server ID, only one entry on connectedEndpoints when acting as Client.
                 for (String endpoint : connectedEndpoints.keySet())
                     endpointId = endpoint;
                 sendMessage(endpointId, "swap_client_server");
@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // When client/server switch is turned off
+    // When client/server switch is turned off.
     public void requestDisconnect(String caller) {
 
         if (caller.equals("CLIENT")) {
@@ -158,13 +158,13 @@ public class MainActivity extends AppCompatActivity {
             navController.navigate(R.id.navigation_server);
         }
 
-        // Disconnects from, and removes all traces of, all connected and/or discovered endpoints
+        // Disconnects from, and removes all traces of, all connected and/or discovered endpoints.
         Nearby.getConnectionsClient(context).stopAllEndpoints();
         // Clear connected endpoints
         connectedEndpoints.clear();
     }
 
-    // Called to clear selected files related data for merging
+    // Called to clear selected files related data for merging.
     public void clearFilesPath() {
         inputFiles.clear();
         fileNames.clear();
@@ -176,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
         if (endpointId != null) {
             // Convert the message to Bytes
             byte[] bytes = msg.getBytes(StandardCharsets.UTF_8);
-            // Generate payload and send it to destination
+            // Generate payload and send it to destination.
             Payload bytesPayload = Payload.fromBytes(bytes);
             Nearby.getConnectionsClient(context).sendPayload(endpointId, bytesPayload);
         }
@@ -242,7 +242,7 @@ public class MainActivity extends AppCompatActivity {
 
                         case ConnectionsStatusCodes.STATUS_OK:
                             // We're connected! Can now start sending and receiving data.
-                            // Save new connected endpoint
+                            // Save new connected endpoint.
                             connectedEndpoints.put(temp_endpointId, temp_connectionInfo);
 
                             // Refresh fragment
@@ -271,7 +271,7 @@ public class MainActivity extends AppCompatActivity {
                             break;
 
                         default:
-                            // Unknown status code
+                            // Unknown status code.
                     }
 
                     temp_connectionInfo = null;
@@ -282,17 +282,17 @@ public class MainActivity extends AppCompatActivity {
                 public void onDisconnected(@NotNull String endpointId) {
                     /* We've been disconnected from this endpoint. No more data can be
                         sent or received. */
-                    // Retrieve old endpoint info
+                    // Retrieve old endpoint info.
                     ConnectionInfo endpointInfo = connectedEndpoints.get(endpointId);
 
                     if (endpointInfo != null) {
                         Toast.makeText(activity_context, getString(R.string.device_disconnected)
                                 + " " + endpointInfo.getEndpointName(), Toast.LENGTH_LONG).show();
-                        // Remove old endpoint
+                        // Remove old endpoint.
                         connectedEndpoints.remove(endpointId);
                         if (endpointInfo.getEndpointName().equals(savedUIData.getRecording_device()))
                             savedUIData.setRecording(false);
-                        // Refresh fragments
+                        // Refresh fragments.
                         if (deviceRole.equals("Client"))
                             navController.navigate(R.id.navigation_client);
                         else
@@ -308,12 +308,12 @@ public class MainActivity extends AppCompatActivity {
         public void onPayloadReceived(@NonNull String endpointId, @NonNull Payload payload) {
 
             if (payload.getType() == Payload.Type.BYTES) {
-                // Convert the payload from Bytes to a String
+                // Convert the payload from Bytes to a String.
                 String msg = new String(payload.asBytes(), StandardCharsets.UTF_8);
                 switch (msg) {
 
                     case "swap_client_server":
-                        // Request to change Server
+                        // Request to change Server.
                         if (!savedUIData.getRecording()) {
                             sendMessage(endpointId, "allow_swap");
                             for (String endpoint : connectedEndpoints.keySet()) {
@@ -351,6 +351,8 @@ public class MainActivity extends AppCompatActivity {
                     case "start_rec":
                         navController.navigate(R.id.navigation_preview);
                         navView.setVisibility(View.INVISIBLE);
+
+                        // Delay to allow device to show the new loaded fragment and then take the loaded fragment reference.
                         final Handler starterHandler = new Handler();
                         starterHandler.postDelayed(new Runnable() {
                             @Override

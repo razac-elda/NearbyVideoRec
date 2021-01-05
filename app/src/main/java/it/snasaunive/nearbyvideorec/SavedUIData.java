@@ -1,7 +1,7 @@
 package it.snasaunive.nearbyvideorec;
 
 
-// Singleton-enum pattern is the suggested implementation of a Singleton nowadays.
+// Singleton-enum pattern is the suggested implementation of a Singleton.
 public enum SavedUIData {
     INSTANCE;
 
