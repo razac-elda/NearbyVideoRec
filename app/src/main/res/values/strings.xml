@@ -1,6 +1,55 @@
 <resources>
-    <string name="app_name">NearbyVideorec</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="app_name">NearbyVideoRec</string>
+    <string name="title_client">Client</string>
+    <string name="title_server">Server</string>
+    <string name="title_video">Video</string>
+    <string name="activate_as_a_client">Activate as a client</string>
+    <string name="activate_as_a_server">Activate as a server</string>
+    <string name="client_not_connected">Not connected to a server</string>
+    <string name="client_connected_to">Connected to:</string>
+    <string name="connected_as_a_server">You are connected as a server</string>
+    <string name="client_status_offline">Client offline</string>
+    <string name="client_status_online">Client online</string>
+    <string name="server_status_offline">Server offline</string>
+    <string name="server_status_online">Server online</string>
+    <string name="server_select_a_device">Select a device</string>
+    <string name="server_start_video">Start</string>
+    <string name="server_stop_video">Stop</string>
+    <string name="accept_connection_to">Accept connection to</string>
+    <string name="confirm_device_code">Confirm the code matches on both devices:</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="error">Error</string>
+    <string name="error_discovery_server">Cannot switch to discovery if you are the server! Disconnect first.</string>
+    <string name="advertising">Advertising</string>
+    <string name="discovering">Discovering</string>
+    <string name="device_disconnected">Device disconnected:</string>
+    <string name="connected_to">Connected to:</string>
+    <string name="connection_rejected">Connection rejected!</string>
+    <string name="connection_error">Connection error!</string>
+    <string name="permissions_denied">Permissions denied</string>
+    <string name="no_device_selected">No device selected</string>
+    <string name="recording_ongoing">Cannot become server during recording</string>
+    <string name="merge_success">Videos merged</string>
+    <string name="merge_cancel">Merge cancelled</string>
+    <string name="merge_not_found">Select at least one video</string>
+    <string name="no_file_selected">No file selected</string>
+    <string name="merge_video">Merge video</string>
+    <string name="choose_video">Choose video</string>
+    <string name="clear_list">Clear list</string>
+    <string name="getting_started">
+        <![CDATA[
+        <p><strong>Getting started</strong></p>
+        <ul>
+          <li><strong>Client</strong>: Turn on the switch to start the discovery, accept/reject the connection when promped.</li>
+          <li><strong>Server</strong>: Turn on the switch to start advertising, accept/reject incoming connections when promped.<br />
+              When all the desired connections are established you may choose a device to start/stop the recording on it.</li>
+          <li><strong>Video</strong>: Select each file you want to merge together and press the merge button.</li>
+        </ul>
+        ]]>
+    </string>
+    <string name="merge_location">Merged video are located in Movies/NearbyVideoRec</string>
+    <string name="unsupported_storage">Device is using unsupported storage system. If you are selecting the video from a quick access tab try instead to navigate manually to the file location.</string>
+    <string name="exit_app">Exit application</string>
+    <string name="exit_app_text">Are you sure you want to exit?</string>
 </resources>

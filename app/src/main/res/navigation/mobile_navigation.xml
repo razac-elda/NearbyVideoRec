@@ -3,23 +3,29 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@+id/navigation_client">
 
     <fragment
-        android:id="@+id/navigation_home"
-        android:name="com.example.nearbyvideorec.ui.home.HomeFragment"
-        android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
+        android:id="@+id/navigation_client"
+        android:name="it.snasaunive.nearbyvideorec.ui.ClientFragment"
+        android:label="@string/title_client"
+        tools:layout="@layout/fragment_client" />
 
     <fragment
-        android:id="@+id/navigation_dashboard"
-        android:name="com.example.nearbyvideorec.ui.dashboard.DashboardFragment"
-        android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        android:id="@+id/navigation_server"
+        android:name="it.snasaunive.nearbyvideorec.ui.ServerFragment"
+        android:label="@string/title_server"
+        tools:layout="@layout/fragment_server" />
 
     <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="com.example.nearbyvideorec.ui.notifications.NotificationsFragment"
-        android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
+        android:id="@+id/navigation_video"
+        android:name="it.snasaunive.nearbyvideorec.ui.VideoFragment"
+        android:label="@string/title_video"
+        tools:layout="@layout/fragment_video" />
+
+    <fragment
+        android:id="@+id/navigation_preview"
+        android:name="it.snasaunive.nearbyvideorec.ui.CameraPreview"
+        android:label="Camera"
+        tools:layout="@layout/fragment_camera_preview" />
 </navigation>
