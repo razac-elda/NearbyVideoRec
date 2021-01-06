@@ -1,4 +1,4 @@
-package com.example.nearbyvideorec.ui.client;
+package it.snasaunive.nearbyvideorec.ui;
 
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
@@ -11,16 +11,17 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.core.text.HtmlCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 
-import com.example.nearbyvideorec.MainActivity;
-import com.example.nearbyvideorec.R;
-import com.example.nearbyvideorec.SavedUIData;
 import com.google.android.gms.nearby.connection.ConnectionInfo;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.util.HashMap;
+
+import it.snasaunive.nearbyvideorec.MainActivity;
+import it.snasaunive.nearbyvideorec.R;
+import it.snasaunive.nearbyvideorec.SavedUIData;
 
 public class ClientFragment extends Fragment {
 
@@ -34,11 +35,11 @@ public class ClientFragment extends Fragment {
     };
     private View switchView;
 
-    private ClientViewModel clientViewModel;
     private SavedUIData savedUIData;
 
     private SwitchMaterial swc_status;
     private TextView tv_connection_status;
+    private TextView tv_help;
 
     private HashMap<String, ConnectionInfo> connectedDevices;
 
@@ -62,9 +63,6 @@ public class ClientFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
-        clientViewModel =
-                new ViewModelProvider(this).get(ClientViewModel.class);
-
         View root = inflater.inflate(R.layout.fragment_client, container, false);
 
         savedUIData = SavedUIData.INSTANCE;
@@ -78,6 +76,10 @@ public class ClientFragment extends Fragment {
 
         tv_connection_status = (TextView) root.findViewById(R.id.client_status);
         tv_connection_status.setTextColor(ContextCompat.getColor(requireContext(), R.color.red));
+
+        tv_help = (TextView) root.findViewById(R.id.help);
+        String s = getString(R.string.getting_started);
+        tv_help.setText(HtmlCompat.fromHtml(s, HtmlCompat.FROM_HTML_MODE_LEGACY));
 
         // Update TextView with info about the connection
         if (!savedUIData.getServer_status_switch()) {
@@ -136,7 +138,8 @@ public class ClientFragment extends Fragment {
 
     // Called after "requestPermissions", check if all permissions were accepted
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
 
         if (requestCode == REQUEST_PERMISSIONS_CODE) {
             if (allPermissionsGranted()) {

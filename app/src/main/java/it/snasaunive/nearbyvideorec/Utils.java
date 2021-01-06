@@ -1,4 +1,4 @@
-package com.example.nearbyvideorec;
+package it.snasaunive.nearbyvideorec;
 
 import android.content.ContentResolver;
 import android.content.ContentUris;
@@ -16,13 +16,12 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.widget.Toast;
 
+import com.arthenica.mobileffmpeg.ExecuteCallback;
 import com.arthenica.mobileffmpeg.FFmpeg;
 
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
@@ -43,10 +42,11 @@ public final class Utils {
         return resolver;
     }
 
-    private static String getTimeStampString() {
+    public static String getTimeStampString() {
         return new SimpleDateFormat("dd-MM-yy_hh-mm-ss", Locale.getDefault()).format(new Date());
     }
 
+    @SuppressWarnings("deprecation")
     public static FileDescriptor createVideoFile(Context context) throws FileNotFoundException {
 
         resolver = context.getContentResolver();
@@ -54,7 +54,7 @@ public final class Utils {
         ContentValues valuesVideos = new ContentValues();
 
         if (Build.VERSION.SDK_INT >= 29) {
-
+            // Compatible with Android Scoped Storage
             Uri collection = MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
             valuesVideos.put(MediaStore.Video.Media.RELATIVE_PATH, Environment.DIRECTORY_MOVIES + "/NearbyVideoRec");
             valuesVideos.put(MediaStore.Video.Media.TITLE, videoFileName);
@@ -64,7 +64,7 @@ public final class Utils {
             uriSavedVideo = resolver.insert(collection, valuesVideos);
 
         } else {
-
+            // For legacy storage device
             String directory = Environment.getExternalStorageDirectory().getAbsolutePath() +
                     File.separator + Environment.DIRECTORY_MOVIES + File.separator + "NearbyVideoRec";
 
@@ -83,22 +83,6 @@ public final class Utils {
         }
 
         return resolver.openFileDescriptor(uriSavedVideo, "w").getFileDescriptor();
-    }
-
-    public static void createTextFile(ArrayList<String> pathList) throws IOException {
-        String directory = Environment.getExternalStorageDirectory().getAbsolutePath() +
-                File.separator + Environment.DIRECTORY_MOVIES + File.separator + "NearbyVideoRec";
-
-        File newDirectory = new File(directory);
-        if (!newDirectory.exists())
-            newDirectory.mkdirs();
-
-        File textFile = new File(directory, "pathList.txt");
-        FileWriter writer = new FileWriter(textFile);
-        for (String path : pathList)
-            writer.write("file '" + path + "'" + System.lineSeparator());
-        writer.flush();
-        writer.close();
     }
 
     public static boolean checkCameraAPI(Context context) {
@@ -125,28 +109,63 @@ public final class Utils {
         return legacy;
     }
 
-    public static void mergeVideo(Context context) {
-
+    public static void mergeVideo(Context context, ArrayList<String> inputFiles, String res, String fps) {
+        // File name and path where it will be created.
         String fileOutputName = "merged_" + Utils.getTimeStampString() + ".mp4";
         String directory = Environment.getExternalStorageDirectory().getAbsolutePath() +
                 File.separator + Environment.DIRECTORY_MOVIES + File.separator + "NearbyVideoRec" + File.separator;
-        String cmd = "-f concat -safe 0 -i " + directory + "pathList.txt" + " -c:v copy -c:a aac " + directory + fileOutputName;
 
-        int result = FFmpeg.execute(cmd);
+        // Create directory if it does not exist.
+        File newDirectory = new File(directory);
+        if (!newDirectory.exists())
+            newDirectory.mkdirs();
 
-        switch (result) {
-            case RETURN_CODE_SUCCESS:
-                Toast.makeText(context, R.string.merge_success, Toast.LENGTH_SHORT).show();
-                break;
-            case RETURN_CODE_CANCEL:
-                Toast.makeText(context, R.string.merge_cancel, Toast.LENGTH_SHORT).show();
-                break;
-            default:
-                Toast.makeText(context, R.string.merge_not_found, Toast.LENGTH_SHORT).show();
-                break;
+        /*  We use StringBuilder to create the FFmpeg command with this format:
+         * ffmpeg -i input1.mp4 -i input2.webm -i input3.mov \
+         * -filter_complex "[0:v:0][0:a:0][1:v:0][1:a:0][2:v:0][2:a:0]concat=n=3:v=1:a=1[outv][outa]" \
+         * -s 1920x1080 -r 30 -codec:v libx264 -crf 24 -preset veryfast \
+         * -map "[outv]" -map "[outa]" output.mp4
+         */
+
+        StringBuilder files = new StringBuilder();
+        StringBuilder inputStream = new StringBuilder();
+        inputStream.append("-filter_complex \"");
+        int n_file = 0;
+        for (String file : inputFiles) {
+            files.append("-i ").append(file).append(" ");
+            inputStream.append("[").append(n_file).append(":v:0][").append(n_file).append(":a:0]");
+            n_file++;
         }
+        inputStream.append("concat=n=").append(inputFiles.size()).append(":v=1:a=1[outv][outa]\" ");
+
+        String codec = "-codec:v libx264 -crf 24";
+        String preset = "-preset veryfast";
+
+        String cmd =
+                files.toString() +
+                inputStream.toString() +
+                "-s " + res + " -r " + fps + " " + codec + " " + preset + " " +
+                "-map \"[outv]\" " + "-map \"[outa]\" " + directory + fileOutputName;
+
+        FFmpeg.executeAsync(cmd, new ExecuteCallback() {
+            @Override
+            public void apply(long executionId, int returnCode) {
+                switch (returnCode) {
+                    case RETURN_CODE_SUCCESS:
+                        Toast.makeText(context, R.string.merge_success, Toast.LENGTH_SHORT).show();
+                        break;
+                    case RETURN_CODE_CANCEL:
+                        Toast.makeText(context, R.string.merge_cancel, Toast.LENGTH_SHORT).show();
+                        break;
+                    default:
+                        Toast.makeText(context, R.string.merge_not_found, Toast.LENGTH_SHORT).show();
+                        break;
+                }
+            }
+        });
     }
 
+    // Convert an Uri to an absolute path
     public static String getPathFromURI(Context context, Uri uri) {
         String selection = null;
         String[] selectionArgs = null;
@@ -154,7 +173,21 @@ public final class Utils {
             if (isExternalStorageDocument(uri)) {
                 String docId = DocumentsContract.getDocumentId(uri);
                 String[] split = docId.split(":");
-                return Environment.getExternalStorageDirectory() + "/" + split[1];
+                String type = split[0];
+                if (type.contains("primary")) {
+                    return Environment.getExternalStorageDirectory() + "/" + split[1];
+                } else {
+                    String filePath = null;
+                    File[] external = context.getExternalMediaDirs();
+                    for (File f : external) {
+                        filePath = f.getAbsolutePath();
+                        if (filePath.contains(type)) {
+                            int endIndex = filePath.indexOf("Android");
+                            filePath = filePath.substring(0, endIndex) + split[1];
+                        }
+                    }
+                    return filePath;
+                }
             } else if (isDownloadsDocument(uri)) {
                 String id = DocumentsContract.getDocumentId(uri);
                 uri = ContentUris.withAppendedId(
@@ -205,12 +238,4 @@ public final class Utils {
     private static boolean isMediaDocument(Uri uri) {
         return "com.android.providers.media.documents".equals(uri.getAuthority());
     }
-
-    public static String TakePathFromURIOldDevice(Uri u) {
-        String uriString = u.toString();
-        String[] parts = uriString.split("/storage");
-        String storage = "/storage";
-        return storage.concat(parts[1]);
-    }
-
 }

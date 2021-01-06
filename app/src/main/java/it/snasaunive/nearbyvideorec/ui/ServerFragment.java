@@ -1,9 +1,10 @@
-package com.example.nearbyvideorec.ui.server;
+package it.snasaunive.nearbyvideorec.ui;
 
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,11 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 
-import com.example.nearbyvideorec.MainActivity;
-import com.example.nearbyvideorec.R;
-import com.example.nearbyvideorec.SavedUIData;
 import com.google.android.gms.nearby.connection.ConnectionInfo;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
@@ -27,16 +24,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import it.snasaunive.nearbyvideorec.MainActivity;
+import it.snasaunive.nearbyvideorec.R;
+import it.snasaunive.nearbyvideorec.SavedUIData;
+
 public class ServerFragment extends Fragment {
 
     private final int REQUEST_PERMISSIONS_CODE = 2;
     private final String[] REQUIRED_PERMISSIONS = new String[]{
             "android.permission.ACCESS_FINE_LOCATION",
+            "android.permission.CAMERA",
+            "android.permission.RECORD_AUDIO",
+            "android.permission.WRITE_EXTERNAL_STORAGE",
             "android.permission.READ_EXTERNAL_STORAGE"
     };
     private View switchView;
 
-    private ServerViewModel serverViewModel;
     private SavedUIData savedUIData;
 
     private SwitchMaterial swc_status;
@@ -106,12 +109,24 @@ public class ServerFragment extends Fragment {
         @Override
         public void onClick(View v) {
             String device = tv_selected_device.getText().toString();
+
             if (!device.equals("No device selected")) {
+
                 for (String key : connectedDevices.keySet()) {
                     if (connectedDevices.get(key).getEndpointName().equals(device)) {
+
+                        savedUIData.setRecording_device(device);
                         ((MainActivity) requireActivity()).sendMessage(key, "start_rec");
                         btn_start.setEnabled(false);
-                        btn_stop.setEnabled(true);
+
+                        final Handler starterHandler = new Handler();
+                        starterHandler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                btn_stop.setEnabled(true);
+                            }
+                        }, 2500);
+
                         savedUIData.setRecording(true);
                     }
                 }
@@ -130,8 +145,15 @@ public class ServerFragment extends Fragment {
                 for (String key : connectedDevices.keySet()) {
                     if (connectedDevices.get(key).getEndpointName().equals(device)) {
                         ((MainActivity) requireActivity()).sendMessage(key, "stop_rec");
-                        btn_start.setEnabled(true);
                         btn_stop.setEnabled(false);
+                        final Handler starterHandler = new Handler();
+                        starterHandler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                btn_start.setEnabled(true);
+                            }
+                        }, 100);
+                        savedUIData.setRecording_device("None");
                         savedUIData.setRecording(false);
                     }
                 }
@@ -144,8 +166,6 @@ public class ServerFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
-        serverViewModel =
-                new ViewModelProvider(this).get(ServerViewModel.class);
         View root = inflater.inflate(R.layout.fragment_server, container, false);
         savedUIData = SavedUIData.INSTANCE;
 
@@ -211,7 +231,8 @@ public class ServerFragment extends Fragment {
 
     // Called after "requestPermissions", check if all permissions were accepted
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
 
         if (requestCode == REQUEST_PERMISSIONS_CODE) {
             if (allPermissionsGranted()) {

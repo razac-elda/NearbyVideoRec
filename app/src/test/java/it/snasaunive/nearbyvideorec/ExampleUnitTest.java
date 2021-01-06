@@ -1,4 +1,4 @@
-package com.example.nearbyvideorec;
+package it.snasaunive.nearbyvideorec;
 
 import org.junit.Test;
 
