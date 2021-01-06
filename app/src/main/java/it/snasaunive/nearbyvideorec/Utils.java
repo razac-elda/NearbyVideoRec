@@ -42,7 +42,7 @@ public final class Utils {
         return resolver;
     }
 
-    private static String getTimeStampString() {
+    public static String getTimeStampString() {
         return new SimpleDateFormat("dd-MM-yy_hh-mm-ss", Locale.getDefault()).format(new Date());
     }
 

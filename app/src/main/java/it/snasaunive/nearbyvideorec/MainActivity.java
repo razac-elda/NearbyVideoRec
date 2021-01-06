@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.ParcelFileDescriptor;
 import android.view.View;
 import android.widget.Toast;
 
@@ -15,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.collection.SimpleArrayMap;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
@@ -39,6 +41,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -304,12 +307,20 @@ public class MainActivity extends AppCompatActivity {
 
     private PayloadCallback payloadCallback = new PayloadCallback() {
 
+        private SimpleArrayMap<Long, Payload> incomingFilePayloads = new SimpleArrayMap<>();
+        private SimpleArrayMap<Long, Payload> completedFilePayloads = new SimpleArrayMap<>();
+        private SimpleArrayMap<Long, String> filePayloadFilenames = new SimpleArrayMap<>();
+
         @Override
         public void onPayloadReceived(@NonNull String endpointId, @NonNull Payload payload) {
 
             if (payload.getType() == Payload.Type.BYTES) {
                 // Convert the payload from Bytes to a String.
                 String msg = new String(payload.asBytes(), StandardCharsets.UTF_8);
+                String[] parts = msg.split(":");
+                if (parts[0].equals("filename")) {
+                    msg = parts[0];
+                }
                 switch (msg) {
 
                     case "swap_client_server":
@@ -352,7 +363,8 @@ public class MainActivity extends AppCompatActivity {
                         navController.navigate(R.id.navigation_preview);
                         navView.setVisibility(View.INVISIBLE);
 
-                        // Delay to allow device to show the new loaded fragment and then take the loaded fragment reference.
+                        // Delay to allow device to show the new loaded fragment and then take the loaded fragment
+                        // reference.
                         final Handler starterHandler = new Handler();
                         starterHandler.postDelayed(new Runnable() {
                             @Override
@@ -373,12 +385,24 @@ public class MainActivity extends AppCompatActivity {
                             cameraPreview.stopRec();
                         navController.navigate(R.id.navigation_client);
                         navView.setVisibility(View.VISIBLE);
+                        sendRecording(endpointId);
+                        break;
+
+                    case "filename":
+
+                        long payloadId = Long.parseLong(parts[1]);
+                        String filename = "video_" + parts[2] + ".mp4";
+                        filePayloadFilenames.put(payloadId, filename);
+                        processFilePayload(payload.getId());
                         break;
 
                     default:
                         Toast.makeText(activity_context, msg, Toast.LENGTH_LONG).show();
                         break;
                 }
+            } else {
+                if (payload.getType() == Payload.Type.FILE)
+                    incomingFilePayloads.put(payload.getId(), payload);
             }
         }
 
@@ -386,8 +410,45 @@ public class MainActivity extends AppCompatActivity {
         public void onPayloadTransferUpdate(@NonNull String endpointId,
                                             @NonNull PayloadTransferUpdate payloadTransferUpdate) {
             // Used with files payload to keep tracking of the transfer
+            if (payloadTransferUpdate.getStatus() == PayloadTransferUpdate.Status.SUCCESS) {
+                long payloadId = payloadTransferUpdate.getPayloadId();
+                Payload payload = incomingFilePayloads.remove(payloadId);
+                if (payload != null) {
+                    completedFilePayloads.put(payloadId, payload);
+                    if (payload.getType() == Payload.Type.FILE) {
+                        processFilePayload(payloadId);
+                    }
+                }
+            }
+        }
+
+        private void processFilePayload(long payloadId) {
+            Payload filePayload = completedFilePayloads.get(payloadId);
+            String filename = filePayloadFilenames.get(payloadId);
+            if (filePayload != null && filename != null) {
+                completedFilePayloads.remove(payloadId);
+                filePayloadFilenames.remove(payloadId);
+
+                File payloadFile = filePayload.asFile().asJavaFile();
+                payloadFile.renameTo(new File(payloadFile.getParentFile(), filename));
+            }
         }
     };
+
+    private void sendRecording(String endpointId){
+        Uri uri = Utils.getUriSavedVideo();
+        Payload videoPayload = null;
+
+        try {
+            ParcelFileDescriptor video = getContentResolver().openFileDescriptor(uri, "r");
+            videoPayload = Payload.fromFile(video);
+            String filenameMsg = "filename" + ":" + videoPayload.getId() + ":" + Utils.getTimeStampString();
+            sendMessage(endpointId, filenameMsg);
+            Nearby.getConnectionsClient(context).sendPayload(endpointId, videoPayload);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 
     private void startDiscovery() {
 
@@ -478,6 +539,12 @@ public class MainActivity extends AppCompatActivity {
                 .setNegativeButton(getString(R.string.cancel), null)
                 .setIcon(R.drawable.ic_baseline_warning)
                 .show();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Nearby.getConnectionsClient(context).stopAllEndpoints();
     }
 
     public HashMap<String, ConnectionInfo> getConnectedEndpoints() {
