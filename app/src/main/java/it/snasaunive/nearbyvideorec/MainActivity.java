@@ -498,7 +498,12 @@ public class MainActivity extends AppCompatActivity {
 
         Intent fileChooser = new Intent(Intent.ACTION_OPEN_DOCUMENT);
 
-        fileChooser.setType("video/mp4");
+        //fileChooser.setType("video/mp4"); se voglio vedere solo file.mp4, devo levare mimetypes
+        fileChooser.setType("video/*");
+        //you can choose video :  .mp4,.mkv
+        String[] mimetypes = {"video/mp4", "video/x-matroska"};
+        fileChooser.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes);
+
         fileChooser.addCategory(Intent.CATEGORY_OPENABLE);
         fileChooser = Intent.createChooser(fileChooser, "Open folder");
 
