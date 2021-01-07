@@ -9,6 +9,7 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.icu.text.SimpleDateFormat;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -34,6 +35,7 @@ public final class Utils {
     private static Uri uriSavedVideo;
     private static ContentResolver resolver;
 
+
     public static Uri getUriSavedVideo() {
         return uriSavedVideo;
     }
@@ -42,8 +44,12 @@ public final class Utils {
         return resolver;
     }
 
+    public static String createNameVideoFile() {
+        return "merged_" + getTimeStampString() + ".mp4";
+    }
+
     public static String getTimeStampString() {
-        return new SimpleDateFormat("dd-MM-yy_hh-mm-ss", Locale.getDefault()).format(new Date());
+        return new SimpleDateFormat("dd-MM-yy_HH-mm-ss", Locale.getDefault()).format(new Date());
     }
 
     @SuppressWarnings("deprecation")
@@ -73,7 +79,6 @@ public final class Utils {
                 newDirectory.mkdirs();
 
             File createdVideo = new File(directory, videoFileName);
-
             valuesVideos.put(MediaStore.Video.Media.TITLE, videoFileName);
             valuesVideos.put(MediaStore.Video.Media.DISPLAY_NAME, videoFileName);
             valuesVideos.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
@@ -109,9 +114,11 @@ public final class Utils {
         return legacy;
     }
 
+
+    // parameter :res. the input for resolution in this format  heightxwidht or widthxheight example: "1920x1080"
     public static void mergeVideo(Context context, ArrayList<String> inputFiles, String res, String fps) {
         // File name and path where it will be created.
-        String fileOutputName = "merged_" + Utils.getTimeStampString() + ".mp4";
+        String fileOutputName = createNameVideoFile();
         String directory = Environment.getExternalStorageDirectory().getAbsolutePath() +
                 File.separator + Environment.DIRECTORY_MOVIES + File.separator + "NearbyVideoRec" + File.separator;
 
@@ -127,40 +134,80 @@ public final class Utils {
          * -map "[outv]" -map "[outa]" output.mp4
          */
 
+        String dim[] = res.split("x");
+        String scale = "scale=" + dim[0] + ":" + dim[1];
+
         StringBuilder files = new StringBuilder();
         StringBuilder inputStream = new StringBuilder();
         inputStream.append("-filter_complex \"");
-        int n_file = 0;
-        for (String file : inputFiles) {
-            files.append("-i ").append(file).append(" ");
-            inputStream.append("[").append(n_file).append(":v:0][").append(n_file).append(":a:0]");
-            n_file++;
-        }
-        inputStream.append("concat=n=").append(inputFiles.size()).append(":v=1:a=1[outv][outa]\" ");
 
+        for (String file : inputFiles)
+            files.append("-i ").append("'").append(file).append("'").append(" ");
+
+        for (int n_file = 0; n_file < inputFiles.size(); n_file++) {
+            inputStream.append("[").append(n_file).append(":v]")
+                    .append(scale).append(",").append("setsar=1").append("[fv").append(n_file).append("];");
+        }
+
+        for (int n_file = 0; n_file < inputFiles.size(); n_file++) {
+            inputStream.append(" ").append("[fv").append(n_file).append("]").append(" ").append("[").append(n_file).append(":a]").append(" ");
+        }
+
+        inputStream.append("concat=n=").append(inputFiles.size()).append(":v=1:a=1[v][a]\" ");
         String codec = "-codec:v libx264 -crf 24";
-        String preset = "-preset veryfast";
+        String preset = "-preset ultrafast";
 
         String cmd =
                 files.toString() +
-                inputStream.toString() +
-                "-s " + res + " -r " + fps + " " + codec + " " + preset + " " +
-                "-map \"[outv]\" " + "-map \"[outa]\" " + directory + fileOutputName;
+                        inputStream.toString() +
+                        " -r " + fps + " " + codec + " " + preset + " " +
+                        "-map \"[v]\" " + "-map \"[a]\" " + directory + fileOutputName;
 
         FFmpeg.executeAsync(cmd, new ExecuteCallback() {
             @Override
             public void apply(long executionId, int returnCode) {
                 switch (returnCode) {
                     case RETURN_CODE_SUCCESS:
+
+                        String newName = Utils.createNameVideoFile();
+
+                        //process for rename video
+                        File old = new File(directory, fileOutputName);
+                        File n = new File(directory, newName);
+                        if (old.renameTo(n)) {
+                            System.out.println("RINOMINAZIONE RIUSCITA");
+                        }
+                        //put video in mediastore
+                        //create file used for mediastore insert
+                        File generatedVideo = new File(directory, newName);
+                        //prende la durata del video usando mediaplayer
+                        MediaPlayer mp = MediaPlayer.create(context, Uri.fromFile(generatedVideo));
+                        int duration = mp.getDuration();
+                        mp.release();
+
+                        ContentResolver resolver = context.getContentResolver();
+                        ContentValues values = new ContentValues();
+                        //aggiunta sul mediastore
+                        values.put(MediaStore.Video.Media.TITLE, newName);
+                        values.put(MediaStore.Video.Media.DISPLAY_NAME, newName);
+                        values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
+                        values.put(MediaStore.Video.Media.DATA, generatedVideo.getAbsolutePath());
+                        //inserisce la durata del video da mostrare
+                        values.put(MediaStore.Video.VideoColumns.DURATION, duration);
+
+                        resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
+
                         Toast.makeText(context, R.string.merge_success, Toast.LENGTH_SHORT).show();
                         break;
                     case RETURN_CODE_CANCEL:
                         Toast.makeText(context, R.string.merge_cancel, Toast.LENGTH_SHORT).show();
                         break;
                     default:
-                        Toast.makeText(context, R.string.merge_not_found, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, R.string.merge_not_found, Toast.LENGTH_LONG).show();
                         break;
                 }
+
+
             }
         });
     }
@@ -174,19 +221,17 @@ public final class Utils {
                 String docId = DocumentsContract.getDocumentId(uri);
                 String[] split = docId.split(":");
                 String type = split[0];
+                System.out.println("-------------------------------------------------------------------------");
+                System.out.println(docId);
+                System.out.println(type);
+                System.out.println("---------------------------------------------------------------------------------");
+
                 if (type.contains("primary")) {
                     return Environment.getExternalStorageDirectory() + "/" + split[1];
                 } else {
-                    String filePath = null;
-                    File[] external = context.getExternalMediaDirs();
-                    for (File f : external) {
-                        filePath = f.getAbsolutePath();
-                        if (filePath.contains(type)) {
-                            int endIndex = filePath.indexOf("Android");
-                            filePath = filePath.substring(0, endIndex) + split[1];
-                        }
-                    }
-                    return filePath;
+                    //crea il path se il video è su scheda sd
+                    return "storage" + "/" + type + "/" + split[1];
+
                 }
             } else if (isDownloadsDocument(uri)) {
                 String id = DocumentsContract.getDocumentId(uri);
@@ -238,4 +283,6 @@ public final class Utils {
     private static boolean isMediaDocument(Uri uri) {
         return "com.android.providers.media.documents".equals(uri.getAuthority());
     }
+
+
 }
