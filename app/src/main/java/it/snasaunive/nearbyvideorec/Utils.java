@@ -128,32 +128,37 @@ public final class Utils {
             newDirectory.mkdirs();
 
         /*  We use StringBuilder to create the FFmpeg command with this format:
-         * ffmpeg -i input1.mp4 -i input2.webm -i input3.mov \
-         * -filter_complex "[0:v:0][0:a:0][1:v:0][1:a:0][2:v:0][2:a:0]concat=n=3:v=1:a=1[outv][outa]" \
-         * -s 1920x1080 -r 30 -codec:v libx264 -crf 24 -preset veryfast \
-         * -map "[outv]" -map "[outa]" output.mp4
+
+             ffmpeg -i 'input1.mp4' -i 'input2.webm' -i 'input3.mov' \
+            -filter_complex  "[0:v]scale=1280:720,setsar=1[fv0];
+                              [1:v]scale=1280:720,setsar=1[fv1];
+                              [2:v]scale=1280:720,setsar=1[fv2];
+            [fv0] [0:a]  [fv1] [1:a] [fv2] [2:a] concat=n=3:v=1:a=1[outv][outa]" \
+            -r 30 -codec:v libx264 -crf 24 -preset veryfast \
+            -map "[outv]" -map "[outa]" output.mp4
          */
 
+        //set scale string
         String dim[] = res.split("x");
         String scale = "scale=" + dim[0] + ":" + dim[1];
 
         StringBuilder files = new StringBuilder();
         StringBuilder inputStream = new StringBuilder();
         inputStream.append("-filter_complex \"");
-
+        //take input files
         for (String file : inputFiles)
             files.append("-i ").append("'").append(file).append("'").append(" ");
-
+        //scaling video stream
         for (int n_file = 0; n_file < inputFiles.size(); n_file++) {
             inputStream.append("[").append(n_file).append(":v]")
                     .append(scale).append(",").append("setsar=1").append("[fv").append(n_file).append("];");
         }
-
+        //concat video and audio stream
         for (int n_file = 0; n_file < inputFiles.size(); n_file++) {
             inputStream.append(" ").append("[fv").append(n_file).append("]").append(" ").append("[").append(n_file).append(":a]").append(" ");
         }
+        inputStream.append("concat=n=").append(inputFiles.size()).append(":v=1:a=1[outv][outa]\" ");
 
-        inputStream.append("concat=n=").append(inputFiles.size()).append(":v=1:a=1[v][a]\" ");
         String codec = "-codec:v libx264 -crf 24";
         String preset = "-preset ultrafast";
 
@@ -161,8 +166,8 @@ public final class Utils {
                 files.toString() +
                         inputStream.toString() +
                         " -r " + fps + " " + codec + " " + preset + " " +
-                        "-map \"[v]\" " + "-map \"[a]\" " + directory + fileOutputName;
-
+                        "-map \"[outv]\" " + "-map \"[outa]\" " + directory + fileOutputName;
+        System.out.println("COMANDO " + cmd);
         FFmpeg.executeAsync(cmd, new ExecuteCallback() {
             @Override
             public void apply(long executionId, int returnCode) {
