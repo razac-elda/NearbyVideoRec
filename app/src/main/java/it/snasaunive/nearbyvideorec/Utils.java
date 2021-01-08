@@ -9,6 +9,7 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.icu.text.SimpleDateFormat;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -161,6 +162,31 @@ public final class Utils {
             public void apply(long executionId, int returnCode) {
                 switch (returnCode) {
                     case RETURN_CODE_SUCCESS:
+
+
+                        /* for android 10 this process just put video in mediastore cuz appear in recent videos.
+                         * in older android version make the file possible to be retrived by mediastore ex (video, recent shortcut)
+                         */
+
+                        //take file
+                        File generatedVideo = new File(directory, fileOutputName);
+                        //take duration of video because in some old devices the duration could be distorted.
+                        MediaPlayer mp = MediaPlayer.create(context, Uri.fromFile(generatedVideo));
+                        int duration = mp.getDuration();
+                        mp.release();
+
+                        //add video in mediastore
+                        ContentResolver resolver = context.getContentResolver();
+                        ContentValues values = new ContentValues();
+                        values.put(MediaStore.Video.Media.TITLE, fileOutputName);
+                        values.put(MediaStore.Video.Media.DISPLAY_NAME, fileOutputName);
+                        values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
+                        values.put(MediaStore.Video.Media.DATA, generatedVideo.getAbsolutePath());
+                        //insert the correct duration of video
+                        values.put(MediaStore.Video.VideoColumns.DURATION, duration);
+
+                        resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
+
                         Toast.makeText(context, R.string.merge_success, Toast.LENGTH_SHORT).show();
                         break;
                     case RETURN_CODE_CANCEL:
