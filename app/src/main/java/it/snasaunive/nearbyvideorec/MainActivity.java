@@ -255,7 +255,7 @@ public class MainActivity extends AppCompatActivity {
                                 navController.navigate(R.id.navigation_server);
 
                             Toast.makeText(activity_context, getString(R.string.connected_to) +
-                                    " " + temp_connectionInfo.getEndpointName(), Toast.LENGTH_LONG).show();
+                                    " " + temp_connectionInfo.getEndpointName(), Toast.LENGTH_SHORT).show();
 
                             break;
 
@@ -290,11 +290,19 @@ public class MainActivity extends AppCompatActivity {
 
                     if (endpointInfo != null) {
                         Toast.makeText(activity_context, getString(R.string.device_disconnected)
-                                + " " + endpointInfo.getEndpointName(), Toast.LENGTH_LONG).show();
+                                + " " + endpointInfo.getEndpointName(), Toast.LENGTH_SHORT).show();
                         // Remove old endpoint.
                         connectedEndpoints.remove(endpointId);
-                        if (endpointInfo.getEndpointName().equals(savedUIData.getRecording_device()))
+                        if (endpointInfo.getEndpointName().equals(savedUIData.getRecording_device())) {
                             savedUIData.setRecording(false);
+                            savedUIData.setRecording_device("None");
+                        }
+                        if(savedUIData.getRecording_device().equals("Me")) {
+                            cameraPreview.stopRec();
+                            savedUIData.setRecording(false);
+                            savedUIData.setRecording_device("None");
+                            navView.setVisibility(View.VISIBLE);
+                        }
                         // Refresh fragments.
                         if (deviceRole.equals("Client"))
                             navController.navigate(R.id.navigation_client);
@@ -351,7 +359,7 @@ public class MainActivity extends AppCompatActivity {
 
                     case "deny_swap":
                         savedUIData.setServer_status_switch(false);
-                        Toast.makeText(activity_context, getString(R.string.recording_ongoing), Toast.LENGTH_LONG).show();
+                        Toast.makeText(activity_context, getString(R.string.recording_ongoing), Toast.LENGTH_SHORT).show();
                         break;
 
                     case "change_server":
@@ -362,22 +370,8 @@ public class MainActivity extends AppCompatActivity {
                     case "start_rec":
                         navController.navigate(R.id.navigation_preview);
                         navView.setVisibility(View.INVISIBLE);
-
-                        // Delay to allow device to show the new loaded fragment and then take the loaded fragment
-                        // reference.
-                        final Handler starterHandler = new Handler();
-                        starterHandler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                NavHostFragment navHostFragment =
-                                        (NavHostFragment) getSupportFragmentManager().
-                                                findFragmentById(R.id.nav_host_fragment);
-                                cameraPreview = (CameraPreview) navHostFragment.
-                                        getChildFragmentManager().getFragments().get(0);
-                                if (cameraPreview != null)
-                                    cameraPreview.startRec();
-                            }
-                        }, 1000);
+                        savedUIData.setRecording(true);
+                        savedUIData.setRecording_device("Me");
                         break;
 
                     case "stop_rec":
@@ -385,6 +379,8 @@ public class MainActivity extends AppCompatActivity {
                             cameraPreview.stopRec();
                         navController.navigate(R.id.navigation_client);
                         navView.setVisibility(View.VISIBLE);
+                        savedUIData.setRecording(false);
+                        savedUIData.setRecording_device("None");
                         sendRecording(endpointId);
                         break;
 
@@ -397,7 +393,7 @@ public class MainActivity extends AppCompatActivity {
                         break;
 
                     default:
-                        Toast.makeText(activity_context, msg, Toast.LENGTH_LONG).show();
+                        Toast.makeText(activity_context, msg, Toast.LENGTH_SHORT).show();
                         break;
                 }
             } else {
@@ -431,11 +427,35 @@ public class MainActivity extends AppCompatActivity {
 
                 File payloadFile = filePayload.asFile().asJavaFile();
                 payloadFile.renameTo(new File(payloadFile.getParentFile(), filename));
+
+                Toast.makeText(activity_context, getString(R.string.file_transfer), Toast.LENGTH_SHORT).show();
             }
         }
     };
 
-    private void sendRecording(String endpointId){
+    // Method called from the fragment when it's visible
+    public void initializePreviewFragment() {
+        // We get the fragment reference to allow calling methods.
+        NavHostFragment navHostFragment =
+                (NavHostFragment) getSupportFragmentManager().
+                        findFragmentById(R.id.nav_host_fragment);
+        cameraPreview = (CameraPreview) navHostFragment.
+                getChildFragmentManager().getFragments().get(0);
+        if (cameraPreview != null) {
+            /* This delay is useful for old devices, we wait 1 second to start recording. If not the camera component
+             * cannot resolve the correct File Descriptor inside the fragment.
+             */
+            final Handler Handler = new Handler();
+            Handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    cameraPreview.startRec();
+                }
+            }, 1000);
+        }
+    }
+
+    private void sendRecording(String endpointId) {
         Uri uri = Utils.getUriSavedVideo();
         Payload videoPayload = null;
 
