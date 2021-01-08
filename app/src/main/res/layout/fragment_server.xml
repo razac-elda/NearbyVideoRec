@@ -29,6 +29,7 @@
 
     <Button
         android:id="@+id/server_start_rec_button"
+        android:drawableEnd="@drawable/ic_baseline_play_arrow"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -45,6 +46,7 @@
 
     <Button
         android:id="@+id/server_stop_rec_button"
+        android:drawableEnd="@drawable/ic_baseline_stop"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -80,6 +82,7 @@
 
     <Button
         android:id="@+id/server_select_device_button"
+        android:drawableEnd="@drawable/ic_baseline_phone"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
