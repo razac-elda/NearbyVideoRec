@@ -1,5 +1,6 @@
 package it.snasaunive.nearbyvideorec;
 
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -110,6 +111,7 @@ public final class Utils {
         return legacy;
     }
 
+    @SuppressWarnings("deprecation")
     public static void mergeVideo(Context context, ArrayList<String> inputFiles, String res, String fps) {
         // File name and path where it will be created.
         String fileOutputName = "merged_" + getTimeStampString() + ".mp4";
@@ -151,40 +153,34 @@ public final class Utils {
         String codec = "-codec:v libx264 -crf 24";
         String preset = "-preset ultrafast";
 
-        String cmd =
-                files.toString() +
-                inputStream.toString() +
-                " -r " + fps + " " + codec + " " + preset + " " +
+        String cmd = files.toString() + inputStream.toString() + " -r " + fps + " " + codec + " " + preset + " " +
                 "-map \"[outv]\" " + "-map \"[outa]\" " + directory + fileOutputName;
 
         FFmpeg.executeAsync(cmd, new ExecuteCallback() {
+            @SuppressLint("InlinedApi")
             @Override
             public void apply(long executionId, int returnCode) {
                 switch (returnCode) {
                     case RETURN_CODE_SUCCESS:
 
-                        /*
-                        generated video appears and could be retrived by shortcuts (recents, videos).
-                        in some older devices the internal storage directory does not appear and
-                        the solution we found is that putting the video in mediastore with the possibility of generated video
-                        to be used for another merge.
+                        /* Generated video should also be visible from "recent" or "video" tab in the file manager.
+                         * Some old devices do not have an extensive file manager and the merged video is not visible in
+                         * "quick access" tabs, so we create a new reference for it.
                          */
 
-                        //take file
+                        // Video file just generated.
                         File generatedVideo = new File(directory, fileOutputName);
-                        //take duration of video because in some old devices the duration could be distorted.
+                        // Take duration of video because in some old devices the duration is incorrect.
                         MediaPlayer mp = MediaPlayer.create(context, Uri.fromFile(generatedVideo));
                         int duration = mp.getDuration();
                         mp.release();
 
-                        //add video in mediastore
                         ContentResolver resolver = context.getContentResolver();
                         ContentValues values = new ContentValues();
                         values.put(MediaStore.Video.Media.TITLE, fileOutputName);
                         values.put(MediaStore.Video.Media.DISPLAY_NAME, fileOutputName);
                         values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
                         values.put(MediaStore.Video.Media.DATA, generatedVideo.getAbsolutePath());
-                        //insert the correct duration of video displayed by mediastore
                         values.put(MediaStore.Video.VideoColumns.DURATION, duration);
 
                         resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
@@ -203,6 +199,7 @@ public final class Utils {
     }
 
     // Convert an Uri to an absolute path
+    @SuppressWarnings("deprecation")
     public static String getPathFromURI(Context context, Uri uri) {
         String selection = null;
         String[] selectionArgs = null;
