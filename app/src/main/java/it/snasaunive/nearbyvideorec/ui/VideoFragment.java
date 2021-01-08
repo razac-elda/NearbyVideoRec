@@ -1,6 +1,8 @@
 package it.snasaunive.nearbyvideorec.ui;
 
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -38,6 +40,13 @@ public class VideoFragment extends Fragment {
 
     private ArrayList<String> paths_list;
     private ArrayList<String> videoNames;
+    private static String[] scales = {
+            "1920x1080",
+            "1080x1920",
+            "1280x720",
+            "720x1280"
+            //todo add common scales
+    };
 
     private final View.OnClickListener choose_OnClickListener = new View.OnClickListener() {
         @Override
@@ -55,12 +64,25 @@ public class VideoFragment extends Fragment {
     private final View.OnClickListener merge_OnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Utils.mergeVideo(requireContext(), ((MainActivity) requireActivity()).getInputFiles(), "1280x720", "30");
-            ((MainActivity) requireActivity()).clearFilesPath();
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+            builder.setTitle("Choose scale : ")
+                    .setItems(scales, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int pos) {
+                            String inputRes = scales[pos];
+                            Utils.mergeVideo(requireContext(), ((MainActivity) requireActivity()).getInputFiles(), inputRes, "30");
+                            ((MainActivity) requireActivity()).clearFilesPath();
+                        }
+                    });
+
+            AlertDialog dialog = builder.create();
+            dialog.show();
         }
     };
 
     private final View.OnClickListener clear_OnClickListener = new View.OnClickListener() {
+
         @Override
         public void onClick(View v) {
             ((MainActivity) requireActivity()).clearFilesPath();
@@ -94,6 +116,7 @@ public class VideoFragment extends Fragment {
         btn_choose_files.setOnClickListener(choose_OnClickListener);
         btn_merge.setOnClickListener(merge_OnClickListener);
         btn_clear_files.setOnClickListener(clear_OnClickListener);
+
 
         return root;
 
