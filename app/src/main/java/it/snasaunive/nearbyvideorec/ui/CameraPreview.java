@@ -5,7 +5,6 @@ import android.content.ContentValues;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +22,7 @@ import com.otaliastudios.cameraview.controls.Mode;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 
+import it.snasaunive.nearbyvideorec.MainActivity;
 import it.snasaunive.nearbyvideorec.R;
 import it.snasaunive.nearbyvideorec.Utils;
 
@@ -78,30 +78,20 @@ public class CameraPreview extends Fragment {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        // Small delay to ensure video file is created.
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                camera.open();
-            }
-        }, 50);
+        camera.open();
         if (videoFileDescriptor != null)
             camera.takeVideo(videoFileDescriptor);
     }
 
     // Called from MainActivity
     public void stopRec() {
-        // Delay for a smoother animation.
-        final Handler Handler = new Handler();
-        Handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                camera.stopVideo();
-            }
-        }, 10);
+        camera.stopVideo();
         camera.close();
-        camera.destroy();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        ((MainActivity) requireActivity()).initializePreviewFragment();
+    }
 }
