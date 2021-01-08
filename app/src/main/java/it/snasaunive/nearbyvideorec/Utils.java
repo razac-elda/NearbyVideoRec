@@ -163,9 +163,11 @@ public final class Utils {
                 switch (returnCode) {
                     case RETURN_CODE_SUCCESS:
 
-
-                        /* for android 10 this process just put video in mediastore cuz appear in recent videos.
-                         * in older android version make the file possible to be retrived by mediastore ex (video, recent shortcut)
+                        /*
+                        generated video appears and could be retrived by shortcuts (recents, videos).
+                        in some older devices the internal storage directory does not appear and
+                        the solution we found is that putting the video in mediastore with the possibility of generated video
+                        to be used for another merge.
                          */
 
                         //take file
@@ -182,7 +184,7 @@ public final class Utils {
                         values.put(MediaStore.Video.Media.DISPLAY_NAME, fileOutputName);
                         values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
                         values.put(MediaStore.Video.Media.DATA, generatedVideo.getAbsolutePath());
-                        //insert the correct duration of video
+                        //insert the correct duration of video displayed by mediastore
                         values.put(MediaStore.Video.VideoColumns.DURATION, duration);
 
                         resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
