@@ -24,7 +24,7 @@
 
     <Button
         android:id="@+id/btn_select_files"
-        android:drawableEnd="@drawable/ic_video_manage"
+        android:drawableEnd="@drawable/ic_baseline_choose"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
