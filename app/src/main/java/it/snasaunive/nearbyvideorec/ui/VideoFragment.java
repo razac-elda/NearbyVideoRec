@@ -38,12 +38,15 @@ public class VideoFragment extends Fragment {
     private Button btn_clear_files;
     private TextView tv_names;
 
+
     private ArrayList<String> paths_list;
     private ArrayList<String> videoNames;
-    private static String[] scales = {
+    private static final String[] SCALES = {
+            //horizontal
             "1920x1080",
-            "1080x1920",
             "1280x720",
+            //vertical
+            "1080x1920",
             "720x1280"
             //todo add common scales
     };
@@ -64,17 +67,35 @@ public class VideoFragment extends Fragment {
     private final View.OnClickListener merge_OnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-
+            /* we use AlertDialog for let user choose scaling before merging */
             AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-            builder.setTitle("Choose scale : ")
-                    .setItems(scales, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int pos) {
-                            String inputRes = scales[pos];
-                            Utils.mergeVideo(requireContext(), ((MainActivity) requireActivity()).getInputFiles(), inputRes, "30");
-                            ((MainActivity) requireActivity()).clearFilesPath();
-                        }
-                    });
+            builder.setTitle("Choose a scale : ");
+            //implemented with one position array for access in "inner class"
+            //set the default value if user does not select another
+            int defaultPos = 0;
+            String[] selectedValue = {SCALES[defaultPos]};
+
+            //when dialog opened need a default position
+            builder.setSingleChoiceItems(SCALES, defaultPos, new DialogInterface.OnClickListener() {
+                //if user clicks another value
+                @Override
+                public void onClick(DialogInterface dialog, int pos) {
+                    selectedValue[0] = SCALES[pos];
+                }
+            });
+
+            //when user confirm
+            builder.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int pos) {
+                    String inputRes = selectedValue[0];
+                    Utils.mergeVideo(requireContext(), ((MainActivity) requireActivity()).getInputFiles(), inputRes, "30");
+                    ((MainActivity) requireActivity()).clearFilesPath();
+                }
+            });
+
+            //when user reject
+            builder.setNegativeButton("Back", null);
 
             AlertDialog dialog = builder.create();
             dialog.show();
