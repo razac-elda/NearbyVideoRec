@@ -37,6 +37,7 @@ public class VideoFragment extends Fragment {
     private Button btn_choose_files;
     private Button btn_clear_files;
     private TextView tv_names;
+    private Button btn_remove_lastVideo;
 
 
     private ArrayList<String> paths_list;
@@ -70,7 +71,7 @@ public class VideoFragment extends Fragment {
             /* we use AlertDialog for let user choose scaling before merging */
             AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
             builder.setTitle("Choose a scale : ");
-            //implemented with one position array for access in "inner class"
+            //implemented with one position array for access in "anonymous class"
             //set the default value if user does not select another
             int defaultPos = 0;
             String[] selectedValue = {SCALES[defaultPos]};
@@ -109,6 +110,13 @@ public class VideoFragment extends Fragment {
             ((MainActivity) requireActivity()).clearFilesPath();
         }
     };
+    private final View.OnClickListener removeLastVideoSelected_OnClickListener = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            ((MainActivity) requireActivity()).deleteLastVideoSelected();
+        }
+    };
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -123,12 +131,14 @@ public class VideoFragment extends Fragment {
         btn_merge = (Button) root.findViewById(R.id.btn_merge);
         btn_clear_files = (Button) root.findViewById(R.id.btn_clear_files);
         tv_names = (TextView) root.findViewById(R.id.filename);
+        btn_remove_lastVideo = (Button) root.findViewById(R.id.btn_remove_lastVideo);
 
         ArrayList<String> filenames = ((MainActivity) requireActivity()).getFileNames();
         if (filenames.isEmpty()) {
             tv_names.setText(R.string.no_file_selected);
             btn_clear_files.setEnabled(false);
             btn_merge.setEnabled(false);
+            btn_remove_lastVideo.setEnabled(false);
         } else {
             for (String name : filenames)
                 tv_names.append(name + System.lineSeparator());
@@ -136,6 +146,7 @@ public class VideoFragment extends Fragment {
 
         btn_choose_files.setOnClickListener(choose_OnClickListener);
         btn_merge.setOnClickListener(merge_OnClickListener);
+        btn_remove_lastVideo.setOnClickListener(removeLastVideoSelected_OnClickListener);
         btn_clear_files.setOnClickListener(clear_OnClickListener);
 
 

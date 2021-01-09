@@ -37,6 +37,7 @@
     <string name="merge_video">Merge video</string>
     <string name="choose_video">Choose video</string>
     <string name="clear_list">Clear list</string>
+    <string name="remove_last_video">Remove last video</string>
     <string name="getting_started">
         <![CDATA[
         <p><strong>Getting started</strong></p>

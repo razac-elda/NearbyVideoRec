@@ -564,4 +564,12 @@ public class MainActivity extends AppCompatActivity {
         return fileNames;
     }
 
+    public void deleteLastVideoSelected() {
+        if (!inputFiles.isEmpty() && !fileNames.isEmpty()) {
+            inputFiles.remove(inputFiles.size() - 1);
+            fileNames.remove(fileNames.size() - 1);
+            navController.navigate(R.id.navigation_video);
+        }
+    }
+
 }
