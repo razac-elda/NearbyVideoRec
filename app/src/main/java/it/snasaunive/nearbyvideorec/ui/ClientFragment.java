@@ -78,10 +78,11 @@ public class ClientFragment extends Fragment {
         tv_connection_status.setTextColor(ContextCompat.getColor(requireContext(), R.color.red));
 
         tv_help = (TextView) root.findViewById(R.id.help);
+        // Create getting started text from an HTML string.
         String s = getString(R.string.getting_started);
         tv_help.setText(HtmlCompat.fromHtml(s, HtmlCompat.FROM_HTML_MODE_LEGACY));
 
-        // Update TextView with info about the connection
+        // Update TextView with info about the connection.
         if (!savedUIData.getServer_status_switch()) {
 
             /*
@@ -108,14 +109,14 @@ public class ClientFragment extends Fragment {
         return root;
     }
 
-    // Invoke when all permissions are accepted
+    // Invoke when all permissions are accepted.
     private void manageClient(View v) {
         boolean status = ((SwitchMaterial) v).isChecked();
 
         // Store status in SavedUIData.
         savedUIData.setClient_status_switch(status);
 
-        // Switch on->start client, switch off->disconnect
+        // Switch on->start client, switch off->disconnect.
         if (status) {
             ((MainActivity) requireActivity()).requestConnect("CLIENT");
         } else {
@@ -123,9 +124,9 @@ public class ClientFragment extends Fragment {
         }
     }
 
-    // Permission management
+    // Permission management.
 
-    // Cycle through permissions, reject when at least one is rejected
+    // Cycle through permissions, reject when at least one is rejected.
     private boolean allPermissionsGranted() {
         boolean accept = true;
 
@@ -136,7 +137,7 @@ public class ClientFragment extends Fragment {
         return accept;
     }
 
-    // Called after "requestPermissions", check if all permissions were accepted
+    // Called after "requestPermissions", check if all permissions were accepted.
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
@@ -145,7 +146,7 @@ public class ClientFragment extends Fragment {
             if (allPermissionsGranted()) {
                 manageClient(switchView);
             } else {
-                // User denied some permissions
+                // User denied some permissions.
                 Toast.makeText(requireContext(), getString(R.string.permissions_denied), Toast.LENGTH_LONG).show();
                 swc_status.setChecked(false);
             }
