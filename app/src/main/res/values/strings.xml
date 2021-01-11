@@ -32,7 +32,7 @@
     <string name="recording_ongoing">Cannot become server during recording</string>
     <string name="merge_success">Videos merged</string>
     <string name="merge_cancel">Merge cancelled</string>
-    <string name="merge_not_found">Error on computing videos! \n maybe some are corrupted or without audio</string>
+    <string name="merge_not_found">Error computing videos, some video proprieties are not supported</string>
     <string name="no_file_selected">No file selected</string>
     <string name="merge_video">Merge video</string>
     <string name="choose_video">Choose video</string>
