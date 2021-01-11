@@ -32,7 +32,7 @@
     <string name="recording_ongoing">Cannot become server during recording</string>
     <string name="merge_success">Videos merged</string>
     <string name="merge_cancel">Merge cancelled</string>
-    <string name="merge_not_found">Select at least one video</string>
+    <string name="merge_not_found">Error computing videos, some video proprieties are not supported</string>
     <string name="no_file_selected">No file selected</string>
     <string name="merge_video">Merge video</string>
     <string name="choose_video">Choose video</string>
@@ -52,4 +52,6 @@
     <string name="unsupported_storage">Device is using unsupported storage system. If you are selecting the video from a quick access tab try instead to navigate manually to the file location.</string>
     <string name="exit_app">Exit application</string>
     <string name="exit_app_text">Are you sure you want to exit?</string>
+    <string name="file_transfer">File transferred</string>
+    <string name="choose_res">Choose a resolution:</string>
 </resources>

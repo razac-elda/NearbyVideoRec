@@ -5,7 +5,6 @@ import android.content.ContentValues;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +22,7 @@ import com.otaliastudios.cameraview.controls.Mode;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 
+import it.snasaunive.nearbyvideorec.MainActivity;
 import it.snasaunive.nearbyvideorec.R;
 import it.snasaunive.nearbyvideorec.Utils;
 
@@ -36,19 +36,17 @@ public class CameraPreview extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        // Inflate the layout for this fragment
+        // Inflate the layout for this fragment.
         View root = inflater.inflate(R.layout.fragment_camera_preview, container, false);
 
         camera = root.findViewById(R.id.camera);
-
         // Set Camera1 API if device does not support Camera2.
         if (Utils.checkCameraAPI(requireContext())) {
             camera.setExperimental(false);
             camera.setEngine(Engine.CAMERA1);
         }
-
+        // Bind camera lifecycle to the fragment one.
         camera.setLifecycleOwner(getViewLifecycleOwner());
-
         // Camera listener, when video is taken on Android 10+ we need to update IS_PENDING to 0.
         camera.addCameraListener(new CameraListener() {
             @Override
@@ -63,7 +61,6 @@ public class CameraPreview extends Fragment {
                 }
             }
         });
-
         camera.setMode(Mode.VIDEO);
 
         return root;
@@ -78,30 +75,23 @@ public class CameraPreview extends Fragment {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        // Small delay to ensure video file is created.
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                camera.open();
-            }
-        }, 50);
+        camera.open();
         if (videoFileDescriptor != null)
             camera.takeVideo(videoFileDescriptor);
     }
 
-    // Called from MainActivity
+    // Called from MainActivity.
     public void stopRec() {
-        // Delay for a smoother animation.
-        final Handler Handler = new Handler();
-        Handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                camera.stopVideo();
-            }
-        }, 10);
+        camera.stopVideo();
         camera.close();
-        camera.destroy();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        /* When the fragment is visible we call the activity method to start the recording.
+         * Starting the recording directly here does not work on all phones.
+         */
+        ((MainActivity) requireActivity()).initializePreviewFragment();
+    }
 }

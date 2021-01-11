@@ -58,16 +58,16 @@ public class ServerFragment extends Fragment {
             switchView = v;
 
             if (allPermissionsGranted()) {
-                // All permissions already granted
+                // All permissions already granted.
                 manageServer(switchView);
             } else {
-                // Missing permissions, ask user to accept
+                // Missing permissions, ask user to accept.
                 requestPermissions(REQUIRED_PERMISSIONS, REQUEST_PERMISSIONS_CODE);
             }
         }
     };
 
-    // Select device button listener
+    // Select device button listener.
     private final View.OnClickListener select_onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -93,7 +93,7 @@ public class ServerFragment extends Fragment {
             builder.setTitle(R.string.server_select_a_device);
             builder.setItems(deviceNameArray, new DialogInterface.OnClickListener() {
 
-                //Set the TextView with the device chosen
+                //Set the TextView with the device chosen.
                 @Override
                 public void onClick(DialogInterface dialog, int pos) {
                     tv_selected_device.setText(deviceNameArray[pos]);
@@ -104,55 +104,59 @@ public class ServerFragment extends Fragment {
         }
     };
 
-    // Start recording button listener
+    // Start recording button listener.
     private final View.OnClickListener start_onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             String device = tv_selected_device.getText().toString();
 
             if (!device.equals("No device selected")) {
-
+                // Check if the selected device is also connected.
                 for (String key : connectedDevices.keySet()) {
                     if (connectedDevices.get(key).getEndpointName().equals(device)) {
 
+                        // If connected send the message to start recording.
                         savedUIData.setRecording_device(device);
                         ((MainActivity) requireActivity()).sendMessage(key, "start_rec");
                         btn_start.setEnabled(false);
-
+                        // Delay the stop button to allow the message to arrive and the recording to start.
                         final Handler starterHandler = new Handler();
                         starterHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
                                 btn_stop.setEnabled(true);
                             }
-                        }, 2500);
-
+                        }, 2000);
                         savedUIData.setRecording(true);
                     }
                 }
             } else {
-                Toast.makeText(requireContext(), "Select a device", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), getString(R.string.server_select_a_device), Toast.LENGTH_SHORT).show();
             }
         }
     };
 
-    // Stop recording button listener
+    // Stop recording button listener.
     private final View.OnClickListener stop_onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             String device = tv_selected_device.getText().toString();
+
             if (!device.equals(getString(R.string.no_device_selected))) {
+                // Check if the selected device is also connected.
                 for (String key : connectedDevices.keySet()) {
                     if (connectedDevices.get(key).getEndpointName().equals(device)) {
+                        // If connected send the message to stop recording.
                         ((MainActivity) requireActivity()).sendMessage(key, "stop_rec");
                         btn_stop.setEnabled(false);
+                        // Delay the stop button to allow the message to arrive and the recording to stop.
                         final Handler starterHandler = new Handler();
                         starterHandler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
                                 btn_start.setEnabled(true);
                             }
-                        }, 100);
+                        }, 2000);
                         savedUIData.setRecording_device("None");
                         savedUIData.setRecording(false);
                     }
