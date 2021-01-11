@@ -54,8 +54,8 @@ public class MainActivity extends AppCompatActivity {
     private BottomNavigationView navView;
     /*
      * Singleton implemented with enum, used to save UI elements status when switching fragments.
-     * Each fragment uses this singleton to obtain own UI element status, only if needed.
-     * Any element status that needs to be monitored during execution must be managed.
+     * Fragments uses this singleton to obtain own UI element status.
+     * We can check the elements status for additional control in the main activity.
      */
     private SavedUIData savedUIData;
     // Select strategy for nearby connection.
@@ -82,8 +82,8 @@ public class MainActivity extends AppCompatActivity {
         SERVICE_ID = getPackageName();
         connectedEndpoints = new HashMap<>();
         fileNames = new ArrayList<>();
-        cameraPreview = null;
         inputFiles = new ArrayList<>();
+        cameraPreview = null;
 
         setContentView(R.layout.activity_main);
 
@@ -104,10 +104,11 @@ public class MainActivity extends AppCompatActivity {
 
     // When client/server switch is turned on.
     public void requestConnect(String caller) {
-
         if (caller.equals("CLIENT")) {
+
             // Caller is CLIENT, check if it's also active as server.
             if (!savedUIData.getServer_status_switch()) {
+
                 deviceRole = "Client";
                 startDiscovery();
                 savedUIData.setClient_status_switch(true);
@@ -121,22 +122,20 @@ public class MainActivity extends AppCompatActivity {
                         .show();
                 savedUIData.setClient_status_switch(false);
             }
-
             navController.navigate(R.id.navigation_client);
-
         } else {
 
             // Caller is SERVER
             if (savedUIData.getClient_status_switch()) {
+
                 // Caller is client and want to become a Server.
                 String endpointId = null;
-
                 // Get Server ID, only one entry on connectedEndpoints when acting as Client.
                 for (String endpoint : connectedEndpoints.keySet())
                     endpointId = endpoint;
                 sendMessage(endpointId, "swap_client_server");
-
             } else {
+
                 startAdvertising();
                 savedUIData.setServer_status_switch(true);
                 deviceRole = "Server";
@@ -147,7 +146,6 @@ public class MainActivity extends AppCompatActivity {
 
     // When client/server switch is turned off.
     public void requestDisconnect(String caller) {
-
         if (caller.equals("CLIENT")) {
 
             Nearby.getConnectionsClient(context).stopDiscovery();
@@ -160,10 +158,9 @@ public class MainActivity extends AppCompatActivity {
             savedUIData.setServer_status_switch(false);
             navController.navigate(R.id.navigation_server);
         }
-
         // Disconnects from, and removes all traces of, all connected and/or discovered endpoints.
         Nearby.getConnectionsClient(context).stopAllEndpoints();
-        // Clear connected endpoints
+        // Clear connected endpoints.
         connectedEndpoints.clear();
     }
 
@@ -174,18 +171,43 @@ public class MainActivity extends AppCompatActivity {
         navController.navigate(R.id.navigation_video);
     }
 
-    public void sendMessage(String endpointId, String msg) {
+    public void openMyFolder() {
+        Intent fileChooser = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        fileChooser.setType("video/*");
+        // Format accepted.
+        String[] mimetypes = {"video/mp4", "video/x-matroska"};
+        fileChooser.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes);
 
-        if (endpointId != null) {
-            // Convert the message to Bytes
-            byte[] bytes = msg.getBytes(StandardCharsets.UTF_8);
-            // Generate payload and send it to destination.
-            Payload bytesPayload = Payload.fromBytes(bytes);
-            Nearby.getConnectionsClient(context).sendPayload(endpointId, bytesPayload);
+        fileChooser.addCategory(Intent.CATEGORY_OPENABLE);
+        fileChooser = Intent.createChooser(fileChooser, "Open folder");
+
+        if (fileChooser.resolveActivity(context.getPackageManager()) != null)
+            startActivityForResult(fileChooser, REQUEST_CODE_BY_INTENT_FILE_CHOOSER);
+    }
+
+    // Method called from the fragment when it's visible.
+    public void initializePreviewFragment() {
+        // We get the fragment reference to allow calling methods.
+        NavHostFragment navHostFragment =
+                (NavHostFragment) getSupportFragmentManager().
+                        findFragmentById(R.id.nav_host_fragment);
+        cameraPreview = (CameraPreview) navHostFragment.
+                getChildFragmentManager().getFragments().get(0);
+        if (cameraPreview != null) {
+            /* This delay is useful for old devices, we wait 1 second to start recording. If not the camera component
+             * cannot resolve the correct File Descriptor inside the fragment.
+             */
+            final Handler Handler = new Handler();
+            Handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    cameraPreview.startRec();
+                }
+            }, 1000);
         }
     }
 
-    // Smartphone manufacturer and model
+    // Smartphone manufacturer and model.
     private String getUserNickname() {
         return Build.MANUFACTURER.toUpperCase() + " " + Build.MODEL;
     }
@@ -293,11 +315,12 @@ public class MainActivity extends AppCompatActivity {
                                 + " " + endpointInfo.getEndpointName(), Toast.LENGTH_SHORT).show();
                         // Remove old endpoint.
                         connectedEndpoints.remove(endpointId);
+                        // Update UI on disconnect while recording.
                         if (endpointInfo.getEndpointName().equals(savedUIData.getRecording_device())) {
                             savedUIData.setRecording(false);
                             savedUIData.setRecording_device("None");
                         }
-                        if(savedUIData.getRecording_device().equals("Me")) {
+                        if (savedUIData.getRecording_device().equals("Me")) {
                             cameraPreview.stopRec();
                             savedUIData.setRecording(false);
                             savedUIData.setRecording_device("None");
@@ -313,8 +336,19 @@ public class MainActivity extends AppCompatActivity {
 
             };
 
+    public void sendMessage(String endpointId, String msg) {
+        if (endpointId != null) {
+            // Convert the message to Bytes.
+            byte[] bytes = msg.getBytes(StandardCharsets.UTF_8);
+            // Generate payload and send it to destination.
+            Payload bytesPayload = Payload.fromBytes(bytes);
+            Nearby.getConnectionsClient(context).sendPayload(endpointId, bytesPayload);
+        }
+    }
+
     private PayloadCallback payloadCallback = new PayloadCallback() {
 
+        // We keep track of the files payloads with three SimpleArrayMaps.
         private SimpleArrayMap<Long, Payload> incomingFilePayloads = new SimpleArrayMap<>();
         private SimpleArrayMap<Long, Payload> completedFilePayloads = new SimpleArrayMap<>();
         private SimpleArrayMap<Long, String> filePayloadFilenames = new SimpleArrayMap<>();
@@ -325,6 +359,7 @@ public class MainActivity extends AppCompatActivity {
             if (payload.getType() == Payload.Type.BYTES) {
                 // Convert the payload from Bytes to a String.
                 String msg = new String(payload.asBytes(), StandardCharsets.UTF_8);
+                // Check if the message received is a filename.
                 String[] parts = msg.split(":");
                 if (parts[0].equals("filename")) {
                     msg = parts[0];
@@ -368,24 +403,30 @@ public class MainActivity extends AppCompatActivity {
                         break;
 
                     case "start_rec":
-                        navController.navigate(R.id.navigation_preview);
-                        navView.setVisibility(View.INVISIBLE);
-                        savedUIData.setRecording(true);
-                        savedUIData.setRecording_device("Me");
+                        if (!savedUIData.getRecording()) {
+                            navController.navigate(R.id.navigation_preview);
+                            navView.setVisibility(View.INVISIBLE);
+                            savedUIData.setRecording(true);
+                            savedUIData.setRecording_device("Me");
+                        }
                         break;
 
                     case "stop_rec":
-                        if (cameraPreview != null)
-                            cameraPreview.stopRec();
-                        navController.navigate(R.id.navigation_client);
-                        navView.setVisibility(View.VISIBLE);
-                        savedUIData.setRecording(false);
-                        savedUIData.setRecording_device("None");
-                        sendRecording(endpointId);
+                        if (savedUIData.getRecording()) {
+                            if (cameraPreview != null)
+                                cameraPreview.stopRec();
+                            navController.navigate(R.id.navigation_client);
+                            navView.setVisibility(View.VISIBLE);
+                            savedUIData.setRecording(false);
+                            savedUIData.setRecording_device("None");
+                            sendRecording(endpointId);
+                        }
                         break;
 
                     case "filename":
-
+                        /* Extracts the payloadId and filename from the message and stores it in the
+                         * filePayloadFilenames map. The format is payloadId:filename.
+                         */
                         long payloadId = Long.parseLong(parts[1]);
                         String filename = "video_" + parts[2] + ".mp4";
                         filePayloadFilenames.put(payloadId, filename);
@@ -398,6 +439,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             } else {
                 if (payload.getType() == Payload.Type.FILE)
+                    // Add this to our tracking map, so that we can retrieve the payload later.
                     incomingFilePayloads.put(payload.getId(), payload);
             }
         }
@@ -408,8 +450,10 @@ public class MainActivity extends AppCompatActivity {
             // Used with files payload to keep tracking of the transfer
             if (payloadTransferUpdate.getStatus() == PayloadTransferUpdate.Status.SUCCESS) {
                 long payloadId = payloadTransferUpdate.getPayloadId();
+                // Remove from incoming.
                 Payload payload = incomingFilePayloads.remove(payloadId);
                 if (payload != null) {
+                    // Add to completed.
                     completedFilePayloads.put(payloadId, payload);
                     if (payload.getType() == Payload.Type.FILE) {
                         processFilePayload(payloadId);
@@ -419,12 +463,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         private void processFilePayload(long payloadId) {
+            /* BYTES and FILE could be received in any order, so we call when either the BYTES or the FILE
+             * payload is completely received. The file payload is considered complete only when both have
+             * been received.
+             */
             Payload filePayload = completedFilePayloads.get(payloadId);
             String filename = filePayloadFilenames.get(payloadId);
             if (filePayload != null && filename != null) {
+                // Transfer completed.
                 completedFilePayloads.remove(payloadId);
                 filePayloadFilenames.remove(payloadId);
-
+                // Rename file.
                 File payloadFile = filePayload.asFile().asJavaFile();
                 payloadFile.renameTo(new File(payloadFile.getParentFile(), filename));
 
@@ -433,37 +482,18 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    // Method called from the fragment when it's visible
-    public void initializePreviewFragment() {
-        // We get the fragment reference to allow calling methods.
-        NavHostFragment navHostFragment =
-                (NavHostFragment) getSupportFragmentManager().
-                        findFragmentById(R.id.nav_host_fragment);
-        cameraPreview = (CameraPreview) navHostFragment.
-                getChildFragmentManager().getFragments().get(0);
-        if (cameraPreview != null) {
-            /* This delay is useful for old devices, we wait 1 second to start recording. If not the camera component
-             * cannot resolve the correct File Descriptor inside the fragment.
-             */
-            final Handler Handler = new Handler();
-            Handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    cameraPreview.startRec();
-                }
-            }, 1000);
-        }
-    }
-
     private void sendRecording(String endpointId) {
+        // Get the generated video.
         Uri uri = Utils.getUriSavedVideo();
         Payload videoPayload = null;
-
         try {
+            // Prepare the file payload.
             ParcelFileDescriptor video = getContentResolver().openFileDescriptor(uri, "r");
             videoPayload = Payload.fromFile(video);
+            // Send a message with the file name.
             String filenameMsg = "filename" + ":" + videoPayload.getId() + ":" + Utils.getTimeStampString();
             sendMessage(endpointId, filenameMsg);
+            // Send payload.
             Nearby.getConnectionsClient(context).sendPayload(endpointId, videoPayload);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -471,7 +501,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startDiscovery() {
-
         DiscoveryOptions discoveryOptions =
                 new DiscoveryOptions.Builder().setStrategy(STRATEGY).build();
 
@@ -490,10 +519,8 @@ public class MainActivity extends AppCompatActivity {
 
     private final EndpointDiscoveryCallback endpointDiscoveryCallback =
             new EndpointDiscoveryCallback() {
-
                 @Override
                 public void onEndpointFound(@NotNull String endpointId, @NotNull DiscoveredEndpointInfo info) {
-
                     // An endpoint was found. We request a connection to it.
                     Nearby.getConnectionsClient(context)
                             .requestConnection(getUserNickname(), endpointId, connectionLifecycleCallback)
@@ -514,30 +541,17 @@ public class MainActivity extends AppCompatActivity {
                 }
             };
 
-    public void openMyFolder() {
-
-        Intent fileChooser = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-
-        //fileChooser.setType("video/mp4"); se voglio vedere solo file.mp4, devo levare mimetypes
-        fileChooser.setType("video/*");
-        //you can choose video :  .mp4,.mkv
-        String[] mimetypes = {"video/mp4", "video/x-matroska"};
-        fileChooser.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes);
-
-        fileChooser.addCategory(Intent.CATEGORY_OPENABLE);
-        fileChooser = Intent.createChooser(fileChooser, "Open folder");
-
-        if (fileChooser.resolveActivity(context.getPackageManager()) != null)
-            startActivityForResult(fileChooser, REQUEST_CODE_BY_INTENT_FILE_CHOOSER);
-    }
+    // Activity overrides
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        // When file chooser returns we retrieve the uri and translate it to an absolute path.
         if (requestCode == REQUEST_CODE_BY_INTENT_FILE_CHOOSER && resultCode == RESULT_OK && data != null) {
             Uri uri = data.getData();
             String path = Utils.getPathFromURI(context, uri);
             if (path != null) {
+                // Put path and file name in respective ArrayLists.
                 int lastIndex = path.lastIndexOf(File.separator);
                 if (lastIndex != -1) {
                     fileNames.add(path.substring(lastIndex + 1));
@@ -555,6 +569,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Close application on back button pressed.
     @Override
     public void onBackPressed() {
         new AlertDialog.Builder(activity_context, R.style.Theme_ConnectionDialog)
@@ -566,11 +581,14 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
+    // On destroy close nearby connection.
     @Override
     protected void onDestroy() {
         super.onDestroy();
         Nearby.getConnectionsClient(context).stopAllEndpoints();
     }
+
+    // Getters
 
     public HashMap<String, ConnectionInfo> getConnectedEndpoints() {
         return connectedEndpoints;

@@ -36,11 +36,12 @@ public final class Utils {
     private static Uri uriSavedVideo;
     private static ContentResolver resolver;
 
-
+    // Always referring to the last video file created.
     public static Uri getUriSavedVideo() {
         return uriSavedVideo;
     }
 
+    // Always referring to the last video file created.
     public static ContentResolver getResolver() {
         return resolver;
     }
@@ -147,7 +148,6 @@ public final class Utils {
 
         for (n_file = 0; n_file < inputFiles.size(); n_file++)
             inputStream.append(" [fv").append(n_file).append("] [").append(n_file).append(":a] ");
-
         inputStream.append("concat=n=").append(inputFiles.size()).append(":v=1:a=1[outv][outa]\" ");
 
         String codec = "-codec:v libx264 -crf 24";
@@ -208,6 +208,7 @@ public final class Utils {
                 String docId = DocumentsContract.getDocumentId(uri);
                 String[] split = docId.split(":");
                 String type = split[0];
+                // Primary or external SD
                 if (type.contains("primary"))
                     return Environment.getExternalStorageDirectory() + "/" + split[1];
                 else
