@@ -1,5 +1,6 @@
 package it.snasaunive.nearbyvideorec;
 
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -9,6 +10,7 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.icu.text.SimpleDateFormat;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -34,6 +36,7 @@ public final class Utils {
     private static Uri uriSavedVideo;
     private static ContentResolver resolver;
 
+
     public static Uri getUriSavedVideo() {
         return uriSavedVideo;
     }
@@ -43,7 +46,7 @@ public final class Utils {
     }
 
     public static String getTimeStampString() {
-        return new SimpleDateFormat("dd-MM-yy_hh-mm-ss", Locale.getDefault()).format(new Date());
+        return new SimpleDateFormat("dd-MM-yy_HH-mm-ss", Locale.getDefault()).format(new Date());
     }
 
     @SuppressWarnings("deprecation")
@@ -73,7 +76,6 @@ public final class Utils {
                 newDirectory.mkdirs();
 
             File createdVideo = new File(directory, videoFileName);
-
             valuesVideos.put(MediaStore.Video.Media.TITLE, videoFileName);
             valuesVideos.put(MediaStore.Video.Media.DISPLAY_NAME, videoFileName);
             valuesVideos.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
@@ -109,9 +111,10 @@ public final class Utils {
         return legacy;
     }
 
+    @SuppressWarnings("deprecation")
     public static void mergeVideo(Context context, ArrayList<String> inputFiles, String res, String fps) {
         // File name and path where it will be created.
-        String fileOutputName = "merged_" + Utils.getTimeStampString() + ".mp4";
+        String fileOutputName = "merged_" + getTimeStampString() + ".mp4";
         String directory = Environment.getExternalStorageDirectory().getAbsolutePath() +
                 File.separator + Environment.DIRECTORY_MOVIES + File.separator + "NearbyVideoRec" + File.separator;
 
@@ -121,10 +124,15 @@ public final class Utils {
             newDirectory.mkdirs();
 
         /*  We use StringBuilder to create the FFmpeg command with this format:
-         * ffmpeg -i input1.mp4 -i input2.webm -i input3.mov \
-         * -filter_complex "[0:v:0][0:a:0][1:v:0][1:a:0][2:v:0][2:a:0]concat=n=3:v=1:a=1[outv][outa]" \
-         * -s 1920x1080 -r 30 -codec:v libx264 -crf 24 -preset veryfast \
-         * -map "[outv]" -map "[outa]" output.mp4
+
+             ffmpeg -i 'input1.mp4' -i 'input2.webm' -i 'input3.mov' \
+            -filter_complex  "[0:v]scale=1280x720,setsar=1[fv0];
+                              [1:v]scale=1280x720,setsar=1[fv1];
+                              [2:v]scale=1280x720,setsar=1[fv2];
+            [fv0] [0:a]  [fv1] [1:a] [fv2] [2:a] concat=n=3:v=1:a=1[outv][outa]" \
+            -r 30 -codec:v libx264 -crf 24 -preset veryfast \
+            -map "[outv]" -map "[outa]" output.mp4
+
          */
 
         StringBuilder files = new StringBuilder();
@@ -132,33 +140,58 @@ public final class Utils {
         inputStream.append("-filter_complex \"");
         int n_file = 0;
         for (String file : inputFiles) {
-            files.append("-i ").append(file).append(" ");
-            inputStream.append("[").append(n_file).append(":v:0][").append(n_file).append(":a:0]");
+            files.append("-i '").append(file).append("' ");
+            inputStream.append("[").append(n_file).append(":v]scale=").append(res).append(",setsar=1[fv").append(n_file).append("];");
             n_file++;
         }
+
+        for (n_file = 0; n_file < inputFiles.size(); n_file++)
+            inputStream.append(" [fv").append(n_file).append("] [").append(n_file).append(":a] ");
+
         inputStream.append("concat=n=").append(inputFiles.size()).append(":v=1:a=1[outv][outa]\" ");
 
         String codec = "-codec:v libx264 -crf 24";
-        String preset = "-preset veryfast";
+        String preset = "-preset ultrafast";
 
-        String cmd =
-                files.toString() +
-                inputStream.toString() +
-                "-s " + res + " -r " + fps + " " + codec + " " + preset + " " +
+        String cmd = files.toString() + inputStream.toString() + " -r " + fps + " " + codec + " " + preset + " " +
                 "-map \"[outv]\" " + "-map \"[outa]\" " + directory + fileOutputName;
 
         FFmpeg.executeAsync(cmd, new ExecuteCallback() {
+            @SuppressLint("InlinedApi")
             @Override
             public void apply(long executionId, int returnCode) {
                 switch (returnCode) {
                     case RETURN_CODE_SUCCESS:
+
+                        /* Generated video should also be visible from "recent" or "video" tab in the file manager.
+                         * Some old devices do not have an extensive file manager and the merged video is not visible in
+                         * "quick access" tabs, so we create a new reference for it.
+                         */
+
+                        // Video file just generated.
+                        File generatedVideo = new File(directory, fileOutputName);
+                        // Take duration of video because in some old devices the duration is incorrect.
+                        MediaPlayer mp = MediaPlayer.create(context, Uri.fromFile(generatedVideo));
+                        int duration = mp.getDuration();
+                        mp.release();
+
+                        ContentResolver resolver = context.getContentResolver();
+                        ContentValues values = new ContentValues();
+                        values.put(MediaStore.Video.Media.TITLE, fileOutputName);
+                        values.put(MediaStore.Video.Media.DISPLAY_NAME, fileOutputName);
+                        values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
+                        values.put(MediaStore.Video.Media.DATA, generatedVideo.getAbsolutePath());
+                        values.put(MediaStore.Video.VideoColumns.DURATION, duration);
+
+                        resolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
+
                         Toast.makeText(context, R.string.merge_success, Toast.LENGTH_SHORT).show();
                         break;
                     case RETURN_CODE_CANCEL:
                         Toast.makeText(context, R.string.merge_cancel, Toast.LENGTH_SHORT).show();
                         break;
                     default:
-                        Toast.makeText(context, R.string.merge_not_found, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, R.string.merge_not_found, Toast.LENGTH_LONG).show();
                         break;
                 }
             }
@@ -166,6 +199,7 @@ public final class Utils {
     }
 
     // Convert an Uri to an absolute path
+    @SuppressWarnings("deprecation")
     public static String getPathFromURI(Context context, Uri uri) {
         String selection = null;
         String[] selectionArgs = null;
@@ -174,20 +208,10 @@ public final class Utils {
                 String docId = DocumentsContract.getDocumentId(uri);
                 String[] split = docId.split(":");
                 String type = split[0];
-                if (type.contains("primary")) {
+                if (type.contains("primary"))
                     return Environment.getExternalStorageDirectory() + "/" + split[1];
-                } else {
-                    String filePath = null;
-                    File[] external = context.getExternalMediaDirs();
-                    for (File f : external) {
-                        filePath = f.getAbsolutePath();
-                        if (filePath.contains(type)) {
-                            int endIndex = filePath.indexOf("Android");
-                            filePath = filePath.substring(0, endIndex) + split[1];
-                        }
-                    }
-                    return filePath;
-                }
+                else
+                    return "storage" + "/" + type + "/" + split[1];
             } else if (isDownloadsDocument(uri)) {
                 String id = DocumentsContract.getDocumentId(uri);
                 uri = ContentUris.withAppendedId(
@@ -238,4 +262,6 @@ public final class Utils {
     private static boolean isMediaDocument(Uri uri) {
         return "com.android.providers.media.documents".equals(uri.getAuthority());
     }
+
+
 }
